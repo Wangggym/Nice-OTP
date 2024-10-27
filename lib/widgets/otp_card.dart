@@ -1,63 +1,256 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
 
 class OTPCard extends StatefulWidget {
   final OTPAccount account;
+  final Function(OTPAccount) onDelete;
+  final Function(OTPAccount) onEdit;
+  final Function(OTPAccount) onPin;
+  final bool isPinned;
 
-  const OTPCard({super.key, required this.account});
+  const OTPCard({
+    super.key,
+    required this.account,
+    required this.onDelete,
+    required this.onEdit,
+    required this.onPin,
+    required this.isPinned,
+  });
 
   @override
   State<OTPCard> createState() => _OTPCardState();
 }
 
-class _OTPCardState extends State<OTPCard> {
+class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
   late String _otp;
   late int _remainingSeconds;
+  AnimationController? _animationController;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 30),
+    );
     _updateOTP();
+  }
+
+  @override
+  void dispose() {
+    _animationController?.dispose();
+    super.dispose();
   }
 
   void _updateOTP() {
     final otpData = OTPService.generateOTP(widget.account.secret);
     setState(() {
-      _otp = otpData.otp;
+      _otp = _formatOTP(otpData.otp);
       _remainingSeconds = otpData.remainingSeconds;
     });
+    _animationController?.value = _remainingSeconds / 30; // 从剩余时间比例开始
+    _animationController?.animateTo(0, duration: Duration(seconds: _remainingSeconds)); // 动画到0
     Future.delayed(Duration(seconds: 1), _updateOTP);
+  }
+
+  String _formatOTP(String otp) {
+    return '${otp.substring(0, 3)} ${otp.substring(3)}';
+  }
+
+  Color _getProgressColor() {
+    if (_remainingSeconds <= 5) {
+      return Colors.red;
+    } else if (_remainingSeconds <= 10) {
+      return Colors.orange;
+    }
+    return Colors.blue;
+  }
+
+  void _copyOTPToClipboard() {
+    Clipboard.setData(ClipboardData(text: _otp.replaceAll(' ', '')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('OTP code copied to clipboard')),
+    );
+  }
+
+  IconData _getServiceIcon() {
+    switch (widget.account.issuer.toLowerCase()) {
+      case 'google':
+        return FontAwesomeIcons.google;
+      case 'github':
+        return FontAwesomeIcons.github;
+      case 'facebook':
+        return FontAwesomeIcons.facebook;
+      case 'twitter':
+        return FontAwesomeIcons.twitter;
+      case 'amazon':
+        return FontAwesomeIcons.amazon;
+      case 'microsoft':
+        return FontAwesomeIcons.microsoft;
+      case 'apple':
+        return FontAwesomeIcons.apple;
+      case 'dropbox':
+        return FontAwesomeIcons.dropbox;
+      case 'slack':
+        return FontAwesomeIcons.slack;
+      case 'steam':
+        return FontAwesomeIcons.steam;
+      case 'paypal':
+        return FontAwesomeIcons.paypal;
+      case 'reddit':
+        return FontAwesomeIcons.reddit;
+      case 'twitch':
+        return FontAwesomeIcons.twitch;
+      default:
+        return FontAwesomeIcons.shield;
+    }
+  }
+
+  void _showOptionsMenu(BuildContext context, LongPressStartDetails details) {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromRect(
+        details.globalPosition & Size(40, 40), // Use a small size for precise positioning
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          height: 40,
+          child: ListTile(
+            leading: const Icon(Icons.copy, size: 20),
+            title: const Text('Copy', style: TextStyle(fontSize: 14)),
+            contentPadding: EdgeInsets.zero,
+            onTap: () {
+              Navigator.pop(context);
+              _copyOTPToClipboard();
+            },
+          ),
+        ),
+        PopupMenuItem(
+          height: 40,
+          child: ListTile(
+            leading: const Icon(Icons.edit, size: 20),
+            title: const Text('Edit', style: TextStyle(fontSize: 14)),
+            contentPadding: EdgeInsets.zero,
+            onTap: () {
+              Navigator.pop(context);
+              widget.onEdit(widget.account);
+            },
+          ),
+        ),
+        PopupMenuItem(
+          height: 40,
+          child: ListTile(
+            leading: Icon(widget.isPinned ? Icons.push_pin : Icons.push_pin_outlined, size: 20),
+            title: Text(widget.isPinned ? 'Unpin' : 'Pin', style: const TextStyle(fontSize: 14)),
+            contentPadding: EdgeInsets.zero,
+            onTap: () {
+              Navigator.pop(context);
+              widget.onPin(widget.account);
+            },
+          ),
+        ),
+        PopupMenuItem(
+          height: 40,
+          child: ListTile(
+            leading: const Icon(Icons.delete, size: 20),
+            title: const Text('Delete', style: TextStyle(fontSize: 14)),
+            contentPadding: EdgeInsets.zero,
+            onTap: () {
+              Navigator.pop(context);
+              widget.onDelete(widget.account);
+            },
+          ),
+        ),
+      ],
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      elevation: 8,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final iconSize = 28.0;
+
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.account.name,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: GestureDetector(
+        onTap: _copyOTPToClipboard,
+        onLongPressStart: (details) => _showOptionsMenu(context, details), // Use onLongPressStart
+        child: InkWell(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  _otp,
-                  style: Theme.of(context).textTheme.headlineMedium,
+                if (widget.isPinned)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: Icon(Icons.push_pin, size: 16, color: Colors.grey),
+                  ),
+                FaIcon(_getServiceIcon(), size: iconSize, color: Colors.black87),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _otp,
+                        style: textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '${widget.account.issuer}: ${widget.account.name}',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-                CircularProgressIndicator(
-                  value: _remainingSeconds / 30,
-                  strokeWidth: 2,
+                const SizedBox(width: 12),
+                SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (_animationController != null)
+                        AnimatedBuilder(
+                          animation: _animationController!,
+                          builder: (context, child) {
+                            return CircularProgressIndicator(
+                              value: _animationController!.value,
+                              strokeWidth: 3,
+                              backgroundColor: Colors.grey[300],
+                              valueColor: AlwaysStoppedAnimation<Color>(_getProgressColor()),
+                              semanticsLabel: 'Circular progress indicator',
+                              semanticsValue: '${(_animationController!.value * 100).toInt()}%',
+                            );
+                          },
+                        ),
+                      Text(
+                        '$_remainingSeconds',
+                        style: textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

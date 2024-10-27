@@ -13,6 +13,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _secretController = TextEditingController();
+  final _issuerController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +32,11 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 controller: _nameController,
                 decoration: const InputDecoration(
                   labelText: 'Account Name',
-                  hintText: 'Enter account name (e.g. Google, GitHub)',
+                  hintText: 'Enter account name (e.g. johndoe@example.com)',
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter an account name';
-                  }
-                  if (value.length < 3) {
-                    return 'Account name should be at least 3 characters long';
                   }
                   return null;
                 },
@@ -54,8 +52,19 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter a secret key';
                   }
-                  if (!RegExp(r'^[A-Z2-7]{16,}$').hasMatch(value)) {
-                    return 'Invalid secret key format. It should contain only uppercase letters and numbers 2-7, and be at least 16 characters long.';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _issuerController,
+                decoration: const InputDecoration(
+                  labelText: 'Issuer',
+                  hintText: 'Enter issuer (e.g. GitHub, Google)',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter an issuer';
                   }
                   return null;
                 },
@@ -68,9 +77,19 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                     MaterialPageRoute(builder: (context) => const QRScanner()),
                   );
                   if (result != null && result is String) {
-                    setState(() {
-                      _secretController.text = result;
-                    });
+                    try {
+                      final uri = Uri.parse(result);
+                      final account = OTPAccount.fromUri(uri);
+                      setState(() {
+                        _nameController.text = account.name;
+                        _secretController.text = account.secret;
+                        _issuerController.text = account.issuer ?? '';
+                      });
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Invalid QR code: $e')),
+                      );
+                    }
                   }
                 },
                 icon: const Icon(Icons.qr_code_scanner),
@@ -85,6 +104,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                       OTPAccount(
                         name: _nameController.text,
                         secret: _secretController.text,
+                        issuer: _issuerController.text,
                       ),
                     );
                   }
@@ -102,6 +122,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   void dispose() {
     _nameController.dispose();
     _secretController.dispose();
+    _issuerController.dispose();
     super.dispose();
   }
 }
