@@ -32,8 +32,17 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed .
+      - name: Format code
+        run: dart format .
+        
+      - name: Create Pull Request for formatting
+        uses: peter-evans/create-pull-request@v6
+        if: github.event_name == 'pull_request'
+        with:
+          commit-message: 'style: format dart code'
+          title: 'style: format dart code'
+          body: 'Applied dart format to maintain consistent code style'
+          branch: format-dart-code
       
       - name: Analyze project source
         run: flutter analyze
