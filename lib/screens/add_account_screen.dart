@@ -115,7 +115,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         setState(() {
           _nameController.text = account.name;
           _secretController.text = account.secret;
-          _issuerController.text = account.issuer ?? '';
+          _issuerController.text = account.issuer;
         });
       }
 
