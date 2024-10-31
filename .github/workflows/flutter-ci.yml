@@ -3,6 +3,8 @@ name: Flutter CI
 on:
   push:
     branches: [ master ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ master ]
 
@@ -16,9 +18,16 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.20.0'
+          flutter-version: '3.19.3'
           channel: 'stable'
           cache: true
+      
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PUB_CACHE }}
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-pub-
       
       - name: Install dependencies
         run: flutter pub get
@@ -31,12 +40,40 @@ jobs:
       
       - name: Run tests
         run: flutter test --coverage
+        
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
       
       - name: Build APK
         run: flutter build apk --release
+
+      - name: Build Web
+        run: flutter build web --release
+
+      - name: Zip Web Build
+        run: cd build/web && zip -r ../../web.zip .
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk 
+          path: build/app/outputs/flutter-apk/app-release.apk
+          
+      - name: Upload Web
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web/
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            web.zip
+          draft: false
+          prerelease: false
