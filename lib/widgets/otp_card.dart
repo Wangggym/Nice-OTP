@@ -53,7 +53,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
     });
     _animationController?.value = _remainingSeconds / 30; // 从剩余时间比例开始
     _animationController?.animateTo(0, duration: Duration(seconds: _remainingSeconds)); // 动画到0
-    Future.delayed(Duration(seconds: 1), _updateOTP);
+    Future.delayed(const Duration(seconds: 1), _updateOTP);
   }
 
   String _formatOTP(String otp) {
@@ -115,7 +115,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
     showMenu(
       context: context,
       position: RelativeRect.fromRect(
-        details.globalPosition & Size(40, 40), // Use a small size for precise positioning
+        details.globalPosition & const Size(40, 40), // Use a small size for precise positioning
         Offset.zero & overlay.size,
       ),
       items: [
@@ -176,7 +176,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final iconSize = 28.0;
+    const iconSize = 28.0;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

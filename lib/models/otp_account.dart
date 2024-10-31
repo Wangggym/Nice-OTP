@@ -1,5 +1,3 @@
-import 'package:uri/uri.dart';
-
 class OTPAccount {
   final String name;
   final String secret;
