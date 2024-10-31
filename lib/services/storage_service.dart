@@ -24,7 +24,8 @@ class StorageService {
     return decodedData.map((item) => OTPAccount.fromJson(item)).toList();
   }
 
-  static Future<void> savePinnedAccounts(List<String> pinnedAccountNames) async {
+  static Future<void> savePinnedAccounts(
+      List<String> pinnedAccountNames) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_pinnedKey, pinnedAccountNames);
   }

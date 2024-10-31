@@ -50,7 +50,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addRandomAccount() {
     final random = Random();
-    final randomIssuers = ['Google', 'GitHub', 'Facebook', 'Twitter', 'Amazon', 'Microsoft', 'Apple'];
+    final randomIssuers = [
+      'Google',
+      'GitHub',
+      'Facebook',
+      'Twitter',
+      'Amazon',
+      'Microsoft',
+      'Apple'
+    ];
     final randomIssuer = randomIssuers[random.nextInt(randomIssuers.length)];
 
     setState(() {
@@ -121,7 +129,8 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AddAccountScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const AddAccountScreen()),
                 );
                 if (result != null && result is OTPAccount) {
                   setState(() {
