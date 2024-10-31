@@ -6,7 +6,7 @@ class OTPService {
   static OTPData generateOTP(String secret, {int timeStep = 30, int digits = 6}) {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     final step = now ~/ timeStep;
-    final hmac = Hmac(sha1, base32.decode(secret));
+    final hmac = Hmac(sha1, Base32.decode(secret));
     final hmacResult = hmac.convert(intToBytes(step));
     final offset = hmacResult.bytes[hmacResult.bytes.length - 1] & 0xf;
     final binary = ByteData.sublistView(Uint8List.fromList(hmacResult.bytes.sublist(offset, offset + 4)))
@@ -40,7 +40,7 @@ class OTPData {
   OTPData({required this.otp, required this.remainingSeconds});
 }
 
-class base32 {
+class Base32 {
   static List<int> decode(String input) {
     const String alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
     final List<int> output = [];

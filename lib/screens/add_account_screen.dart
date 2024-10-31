@@ -71,27 +71,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const QRScanner()),
-                  );
-                  if (result != null && result is String) {
-                    try {
-                      final uri = Uri.parse(result);
-                      final account = OTPAccount.fromUri(uri);
-                      setState(() {
-                        _nameController.text = account.name;
-                        _secretController.text = account.secret;
-                        _issuerController.text = account.issuer ?? '';
-                      });
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Invalid QR code: $e')),
-                      );
-                    }
-                  }
-                },
+                onPressed: _scanQRCode,
                 icon: const Icon(Icons.qr_code_scanner),
                 label: const Text('Scan QR Code'),
               ),
@@ -116,6 +96,38 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _scanQRCode() async {
+    final currentContext = context; // 保存context
+    try {
+      final qrCode = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const QRScanner(),
+        ),
+      );
+
+      // 移除不必要的空值检查
+      if (qrCode != null) {
+        final uri = Uri.parse(qrCode);
+        final account = OTPAccount.fromUri(uri);
+        setState(() {
+          _nameController.text = account.name;
+          _secretController.text = account.secret;
+          _issuerController.text = account.issuer ?? '';
+        });
+      }
+
+      // 在使用context前检查
+      if (!currentContext.mounted) return;
+      // 使用context的代码
+    } catch (e) {
+      if (!currentContext.mounted) return;
+      ScaffoldMessenger.of(currentContext).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
   @override
