@@ -13,19 +13,22 @@ import 'package:two_factor_authentication/screens/home_screen.dart';
 
 void main() {
   group('App Widget Tests', () {
-    testWidgets('App should start with HomeScreen', (WidgetTester tester) async {
+    testWidgets('App should start with HomeScreen',
+        (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
       expect(find.byType(HomeScreen), findsOneWidget);
     });
 
-    testWidgets('HomeScreen should have an Add Account button', (WidgetTester tester) async {
+    testWidgets('HomeScreen should have an Add Account button',
+        (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
       expect(find.byIcon(Icons.add), findsOneWidget);
     });
   });
 
   group('Add Account Screen Tests', () {
-    testWidgets('AddAccountScreen should have QR scanner', (WidgetTester tester) async {
+    testWidgets('AddAccountScreen should have QR scanner',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: AddAccountScreen(),
