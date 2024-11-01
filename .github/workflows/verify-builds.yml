@@ -2,7 +2,7 @@ name: Verify Builds
 
 on:
   workflow_run:
-    workflows: ["test"]
+    workflows: ["CI"]
     types:
       - completed
 
