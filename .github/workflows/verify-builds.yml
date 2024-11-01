@@ -5,15 +5,12 @@ on:
     workflows: ["test"]
     types:
       - completed
-    branches:
-      - master
 
 jobs:
   verify-builds:
     name: Verify ${{ matrix.build_target }} build
-    if: |
-      github.event.workflow_run.conclusion == 'success' && 
-      github.event.workflow_run.event == 'push'
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -22,15 +19,17 @@ jobs:
             build_target: android
           - os: macos-latest
             build_target: ios,macos
-    runs-on: ${{ matrix.os }}
     steps:
-      - name: Debug workflow_run event
+      - name: Debug Info
         run: |
-          echo "Workflow name: ${{ github.event.workflow_run.name }}"
-          echo "Workflow conclusion: ${{ github.event.workflow_run.conclusion }}"
-          echo "Workflow branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "Workflow event: ${{ github.event.workflow_run.event }}"
-          echo "Workflow id: ${{ github.event.workflow_run.id }}"
+          echo "Event name: ${{ github.event_name }}"
+          echo "Workflow name: ${{ github.event.workflow.name }}"
+          echo "Run conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Run name: ${{ github.event.workflow_run.name }}"
+          echo "Run event: ${{ github.event.workflow_run.event }}"
+          echo "Run status: ${{ github.event.workflow_run.status }}"
+          echo "Run branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Repository: ${{ github.repository }}"
           
       - uses: actions/checkout@v4
         with:
