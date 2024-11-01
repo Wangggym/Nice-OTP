@@ -5,10 +5,15 @@ on:
     workflows: ["CI"]
     types:
       - completed
+    branches:
+      - master
 
 jobs:
   verify-builds:
-    if: github.event.workflow_run.conclusion == 'success'
+    name: Verify ${{ matrix.build_target }} build
+    if: |
+      github.event.workflow_run.conclusion == 'success' && 
+      github.event.workflow_run.name == 'CI'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -19,7 +24,15 @@ jobs:
             build_target: ios,macos
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Debug workflow_run event
+        run: |
+          echo "Workflow name: ${{ github.event.workflow_run.name }}"
+          echo "Workflow conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "Workflow branch: ${{ github.event.workflow_run.head_branch }}"
+          
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
