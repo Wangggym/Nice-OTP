@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
+import 'account_options_menu.dart';
 
 class OTPCard extends StatefulWidget {
   final OTPAccount account;
@@ -52,8 +53,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
       _remainingSeconds = otpData.remainingSeconds;
     });
     _animationController?.value = _remainingSeconds / 30; // 从剩余时间比例开始
-    _animationController?.animateTo(0,
-        duration: Duration(seconds: _remainingSeconds)); // 动画到0
+    _animationController?.animateTo(0, duration: Duration(seconds: _remainingSeconds)); // 动画到0
     Future.delayed(const Duration(seconds: 1), _updateOTP);
   }
 
@@ -111,71 +111,22 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
   }
 
   void _showOptionsMenu(BuildContext context, LongPressStartDetails details) {
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    showMenu(
+    final position = RelativeRect.fromRect(
+      details.globalPosition & const Size(40, 40),
+      Offset.zero & overlay.size,
+    );
+
+    AccountOptionsMenu.show(
       context: context,
-      position: RelativeRect.fromRect(
-        details.globalPosition &
-            const Size(40, 40), // Use a small size for precise positioning
-        Offset.zero & overlay.size,
-      ),
-      items: [
-        PopupMenuItem(
-          height: 40,
-          child: ListTile(
-            leading: const Icon(Icons.copy, size: 20),
-            title: const Text('Copy', style: TextStyle(fontSize: 14)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.pop(context);
-              _copyOTPToClipboard();
-            },
-          ),
-        ),
-        PopupMenuItem(
-          height: 40,
-          child: ListTile(
-            leading: const Icon(Icons.edit, size: 20),
-            title: const Text('Edit', style: TextStyle(fontSize: 14)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.pop(context);
-              widget.onEdit(widget.account);
-            },
-          ),
-        ),
-        PopupMenuItem(
-          height: 40,
-          child: ListTile(
-            leading: Icon(
-                widget.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                size: 20),
-            title: Text(widget.isPinned ? 'Unpin' : 'Pin',
-                style: const TextStyle(fontSize: 14)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.pop(context);
-              widget.onPin(widget.account);
-            },
-          ),
-        ),
-        PopupMenuItem(
-          height: 40,
-          child: ListTile(
-            leading: const Icon(Icons.delete, size: 20),
-            title: const Text('Delete', style: TextStyle(fontSize: 14)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.pop(context);
-              widget.onDelete(widget.account);
-            },
-          ),
-        ),
-      ],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      elevation: 8,
+      position: position,
+      account: widget.account,
+      onDelete: widget.onDelete,
+      onEdit: widget.onEdit,
+      onPin: widget.onPin,
+      onCopy: _copyOTPToClipboard,
+      isPinned: widget.isPinned,
     );
   }
 
@@ -188,8 +139,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: GestureDetector(
         onTap: _copyOTPToClipboard,
-        onLongPressStart: (details) =>
-            _showOptionsMenu(context, details), // Use onLongPressStart
+        onLongPressStart: (details) => _showOptionsMenu(context, details), // Use onLongPressStart
         child: InkWell(
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -201,8 +151,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
                     padding: EdgeInsets.only(right: 8),
                     child: Icon(Icons.push_pin, size: 16, color: Colors.grey),
                   ),
-                FaIcon(_getServiceIcon(),
-                    size: iconSize, color: Colors.black87),
+                FaIcon(_getServiceIcon(), size: iconSize, color: Colors.black87),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -241,11 +190,9 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
                               value: _animationController!.value,
                               strokeWidth: 3,
                               backgroundColor: Colors.grey[300],
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  _getProgressColor()),
+                              valueColor: AlwaysStoppedAnimation<Color>(_getProgressColor()),
                               semanticsLabel: 'Circular progress indicator',
-                              semanticsValue:
-                                  '${(_animationController!.value * 100).toInt()}%',
+                              semanticsValue: '${(_animationController!.value * 100).toInt()}%',
                             );
                           },
                         ),
