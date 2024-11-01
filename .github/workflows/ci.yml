@@ -39,21 +39,35 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
       
-      - name: Format code
+      - name: Check formatting
+        id: formatting
+        continue-on-error: true
         run: dart format --set-exit-if-changed .
       
-      - name: Commit format changes
-        if: failure() && github.event_name == 'pull_request'
+      - name: Apply formatting
+        if: steps.formatting.outcome == 'failure' && github.event_name == 'pull_request'
         run: |
+          echo "Formatting Dart code..."
           dart format .
+          
+          echo "Committing changes..."
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
+          
           git add .
-          git diff --quiet && git diff --staged --quiet || git commit -m 'style: format dart code'
-          git push
+          if ! git diff --cached --quiet; then
+            git commit -m 'style: format dart code'
+            git push
+          else
+            echo "No changes to commit"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Verify formatting
+        if: steps.formatting.outcome == 'failure' && github.event_name != 'pull_request'
+        run: dart format --set-exit-if-changed .
       
       - name: Analyze project source
         id: analyze
