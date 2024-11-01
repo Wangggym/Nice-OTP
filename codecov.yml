@@ -1,0 +1,40 @@
+codecov:
+  require_ci_to_pass: true
+  notify:
+    wait_for_ci: true
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...80"
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 5%
+        paths:
+          - "lib/**"
+
+    patch:
+      default:
+        target: 60%
+        paths:
+          - "lib/**"
+
+ignore:
+  - "test"
+  - "**/*.g.dart"
+  - "**/*.freezed.dart"
+  - "lib/generated"
+  - "lib/gen"
+
+comment:
+  layout: "reach,diff,flags,files,footer"
+  behavior: default
+  require_changes: false
+  require_base: false
+  require_head: true
+  show_carryforward_flags: true
+
+github_checks:
+  annotations: true

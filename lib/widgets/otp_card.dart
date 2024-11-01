@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
+import 'account_options_menu.dart';
 
 class OTPCard extends StatefulWidget {
   final OTPAccount account;
@@ -114,68 +115,20 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
 
-    showMenu(
+    final position = RelativeRect.fromRect(
+      details.globalPosition & const Size(40, 40),
+      Offset.zero & overlay.size,
+    );
+
+    AccountOptionsMenu.show(
       context: context,
-      position: RelativeRect.fromRect(
-        details.globalPosition &
-            const Size(40, 40), // Use a small size for precise positioning
-        Offset.zero & overlay.size,
-      ),
-      items: [
-        PopupMenuItem(
-          height: 40,
-          child: ListTile(
-            leading: const Icon(Icons.copy, size: 20),
-            title: const Text('Copy', style: TextStyle(fontSize: 14)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.pop(context);
-              _copyOTPToClipboard();
-            },
-          ),
-        ),
-        PopupMenuItem(
-          height: 40,
-          child: ListTile(
-            leading: const Icon(Icons.edit, size: 20),
-            title: const Text('Edit', style: TextStyle(fontSize: 14)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.pop(context);
-              widget.onEdit(widget.account);
-            },
-          ),
-        ),
-        PopupMenuItem(
-          height: 40,
-          child: ListTile(
-            leading: Icon(
-                widget.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-                size: 20),
-            title: Text(widget.isPinned ? 'Unpin' : 'Pin',
-                style: const TextStyle(fontSize: 14)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.pop(context);
-              widget.onPin(widget.account);
-            },
-          ),
-        ),
-        PopupMenuItem(
-          height: 40,
-          child: ListTile(
-            leading: const Icon(Icons.delete, size: 20),
-            title: const Text('Delete', style: TextStyle(fontSize: 14)),
-            contentPadding: EdgeInsets.zero,
-            onTap: () {
-              Navigator.pop(context);
-              widget.onDelete(widget.account);
-            },
-          ),
-        ),
-      ],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      elevation: 8,
+      position: position,
+      account: widget.account,
+      onDelete: widget.onDelete,
+      onEdit: widget.onEdit,
+      onPin: widget.onPin,
+      onCopy: _copyOTPToClipboard,
+      isPinned: widget.isPinned,
     );
   }
 
