@@ -2,7 +2,7 @@ name: Verify Builds
 
 on:
   workflow_run:
-    workflows: ["CI"]
+    workflows: ["test"]
     types:
       - completed
     branches:
@@ -13,7 +13,7 @@ jobs:
     name: Verify ${{ matrix.build_target }} build
     if: |
       github.event.workflow_run.conclusion == 'success' && 
-      github.event.workflow_run.name == 'CI'
+      github.event.workflow_run.event == 'push'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -29,6 +29,8 @@ jobs:
           echo "Workflow name: ${{ github.event.workflow_run.name }}"
           echo "Workflow conclusion: ${{ github.event.workflow_run.conclusion }}"
           echo "Workflow branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Workflow event: ${{ github.event.workflow_run.event }}"
+          echo "Workflow id: ${{ github.event.workflow_run.id }}"
           
       - uses: actions/checkout@v4
         with:
