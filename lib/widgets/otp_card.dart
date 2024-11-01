@@ -53,7 +53,8 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
       _remainingSeconds = otpData.remainingSeconds;
     });
     _animationController?.value = _remainingSeconds / 30; // 从剩余时间比例开始
-    _animationController?.animateTo(0, duration: Duration(seconds: _remainingSeconds)); // 动画到0
+    _animationController?.animateTo(0,
+        duration: Duration(seconds: _remainingSeconds)); // 动画到0
     Future.delayed(const Duration(seconds: 1), _updateOTP);
   }
 
@@ -111,7 +112,8 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
   }
 
   void _showOptionsMenu(BuildContext context, LongPressStartDetails details) {
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
 
     final position = RelativeRect.fromRect(
       details.globalPosition & const Size(40, 40),
@@ -139,7 +141,8 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: GestureDetector(
         onTap: _copyOTPToClipboard,
-        onLongPressStart: (details) => _showOptionsMenu(context, details), // Use onLongPressStart
+        onLongPressStart: (details) =>
+            _showOptionsMenu(context, details), // Use onLongPressStart
         child: InkWell(
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -151,7 +154,8 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
                     padding: EdgeInsets.only(right: 8),
                     child: Icon(Icons.push_pin, size: 16, color: Colors.grey),
                   ),
-                FaIcon(_getServiceIcon(), size: iconSize, color: Colors.black87),
+                FaIcon(_getServiceIcon(),
+                    size: iconSize, color: Colors.black87),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -190,9 +194,11 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
                               value: _animationController!.value,
                               strokeWidth: 3,
                               backgroundColor: Colors.grey[300],
-                              valueColor: AlwaysStoppedAnimation<Color>(_getProgressColor()),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  _getProgressColor()),
                               semanticsLabel: 'Circular progress indicator',
-                              semanticsValue: '${(_animationController!.value * 100).toInt()}%',
+                              semanticsValue:
+                                  '${(_animationController!.value * 100).toInt()}%',
                             );
                           },
                         ),
