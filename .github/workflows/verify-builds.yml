@@ -20,18 +20,8 @@ jobs:
           allowed-conclusions: success,skipped
           timeout: 900
 
-  setup:
-    needs: wait-for-ci
-    uses: ./.github/workflows/reusable-steps.yml
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    with:
-      os: ${{ matrix.os }}
-      flutter_version: '3.24.1'
-
   verify-builds:
-    needs: setup
+    needs: wait-for-ci
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -42,6 +32,25 @@ jobs:
             build_target: ios,macos
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.1'
+          channel: 'stable'
+          cache: true
+      
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.PUB_CACHE }}
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: ${{ runner.os }}-pub-
+      
+      - name: Install dependencies
+        run: flutter pub get
+
       # Android构建验证
       - name: Verify Android build
         if: matrix.os == 'ubuntu-latest'
