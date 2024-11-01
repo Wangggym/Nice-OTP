@@ -115,3 +115,9 @@ jobs:
         with:
           name: code-coverage-report
           path: coverage/
+
+  verify:
+    needs: test
+    uses: ./.github/workflows/verify-builds.yml
+    with:
+      ref: ${{ github.ref }}

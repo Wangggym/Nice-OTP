@@ -1,15 +1,16 @@
 name: Verify Builds
 
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types:
-      - completed
+  workflow_call:
+    inputs:
+      ref:
+        required: false
+        type: string
+        default: ''
 
 jobs:
   verify-builds:
     name: Verify ${{ matrix.build_target }} build
-    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -20,20 +21,9 @@ jobs:
           - os: macos-latest
             build_target: ios,macos
     steps:
-      - name: Debug Info
-        run: |
-          echo "Event name: ${{ github.event_name }}"
-          echo "Workflow name: ${{ github.event.workflow.name }}"
-          echo "Run conclusion: ${{ github.event.workflow_run.conclusion }}"
-          echo "Run name: ${{ github.event.workflow_run.name }}"
-          echo "Run event: ${{ github.event.workflow_run.event }}"
-          echo "Run status: ${{ github.event.workflow_run.status }}"
-          echo "Run branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "Repository: ${{ github.repository }}"
-          
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ inputs.ref }}
       
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -41,13 +31,6 @@ jobs:
           flutter-version: '3.24.1'
           channel: 'stable'
           cache: true
-      
-      - name: Cache pub dependencies
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.PUB_CACHE }}
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: ${{ runner.os }}-pub-
       
       - name: Install dependencies
         run: flutter pub get
