@@ -1,26 +1,14 @@
 name: Verify Builds
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
 
 jobs:
-  wait-for-ci:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for CI
-        uses: lewagon/wait-on-check-action@v1.3.1
-        with:
-          ref: ${{ github.sha }}
-          check-name: 'test'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 30
-          allowed-conclusions: success,skipped
-
   verify-builds:
-    needs: wait-for-ci
+    if: github.event.workflow_run.conclusion == 'success'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
