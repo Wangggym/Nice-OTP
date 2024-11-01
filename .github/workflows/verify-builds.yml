@@ -1,0 +1,60 @@
+name: Verify Builds
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  wait-for-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for CI
+        uses: lewagon/wait-on-check-action@v1.3.1
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'test'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+          allowed-conclusions: success,skipped
+          timeout: 900
+
+  setup:
+    needs: wait-for-ci
+    uses: ./.github/workflows/reusable-steps.yml
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    with:
+      os: ${{ matrix.os }}
+      flutter_version: '3.24.1'
+
+  verify-builds:
+    needs: setup
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            build_target: android
+          - os: macos-latest
+            build_target: ios,macos
+    runs-on: ${{ matrix.os }}
+    steps:
+      # Android构建验证
+      - name: Verify Android build
+        if: matrix.os == 'ubuntu-latest'
+        run: flutter build apk --debug
+        
+      # iOS构建验证
+      - name: Verify iOS build
+        if: matrix.os == 'macos-latest'
+        run: flutter build ios --debug --no-codesign
+        
+      # macOS构建验证
+      - name: Verify macOS build
+        if: matrix.os == 'macos-latest'
+        run: |
+          flutter config --enable-macos-desktop
+          flutter build macos --debug

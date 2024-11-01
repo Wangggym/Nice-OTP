@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run in debug mode'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    uses: ./.github/workflows/reusable-steps.yml
+    with:
+      os: ubuntu-latest
+      flutter_version: '3.24.1'
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Format code
+        run: dart format --set-exit-if-changed .
+      
+      - name: Commit format changes
+        if: failure() && github.event_name == 'pull_request'
+        run: |
+          dart format .
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
+          git add .
+          git diff --quiet && git diff --staged --quiet || git commit -m 'style: format dart code'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Analyze project source
+        id: analyze
+        continue-on-error: true
+        run: flutter analyze --fatal-infos
+      
+      - name: Fix analyzer issues
+        if: steps.analyze.outcome == 'failure' && github.event_name == 'pull_request'
+        run: |
+          # 运行 dart fix 来修复可自动修复的问题
+          dart fix --apply
+          
+          # 如果有修改，提交更改
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
+          git add .
+          git diff --quiet && git diff --staged --quiet || git commit -m 'fix: apply dart fixes'
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # 再次运行分析，如果还有问题就真的失败
+      - name: Verify fixes
+        if: steps.analyze.outcome == 'failure'
+        run: flutter analyze --fatal-infos
+      
+      - name: Run tests
+        run: flutter test --coverage
+        
+      - name: Upload coverage reports
+        if: success()
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
