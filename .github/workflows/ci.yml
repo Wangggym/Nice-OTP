@@ -79,18 +79,20 @@ jobs:
         include:
           - os: ubuntu-latest
             target: android
-            build-command: flutter build apk --release
+            build-command: flutter build apk --debug # 使用 debug 模式加快构建
           - os: macos-latest
             target: macos
-            build-command: flutter build macos --release
+            build-command: flutter build macos --debug # 使用 debug 模式加快构建
           - os: macos-latest
             target: ios
-            build-command: flutter build ios --release --no-codesign
-      fail-fast: false
+            build-command: flutter build ios --debug --no-codesign # 使用 debug 模式加快构建
+      fail-fast: true # 开启快速失败，节省时间
     
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1 # 减少克隆深度
       
       - if: matrix.target == 'android'
         uses: actions/setup-java@v4
@@ -111,20 +113,21 @@ jobs:
             ${{ env.PUB_CACHE }}
             .dart_tool
             ${{ matrix.target == 'ios' && 'ios/Pods' || '' }}
-          key: ${{ needs.setup.outputs.cache-key }}-${{ matrix.target }}
+            build
+          key: ${{ needs.setup.outputs.cache-key }}-${{ matrix.target }}-build
           restore-keys: |
+            ${{ runner.os }}-flutter-${{ matrix.target }}-build-
             ${{ runner.os }}-flutter-${{ matrix.target }}-
       
       - name: Install Dependencies
         run: |
-          flutter pub get
+          flutter pub get --no-precompile # 跳过预编译
           if [ "${{ matrix.target }}" = "ios" ]; then
-            cd ios && pod install && cd ..
+            cd ios && pod install --deployment && cd .. # 使用更快的 pod install
           fi
       
       - name: Test Build ${{ matrix.target }}
         run: ${{ matrix.build-command }}
-
   # Release 构建
   build:
     if: startsWith(github.ref, 'refs/tags/v')
