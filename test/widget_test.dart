@@ -7,9 +7,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:auth2/main.dart';
-import 'package:auth2/screens/add_account_screen.dart';
-import 'package:auth2/screens/home_screen.dart';
+import 'package:two_factor_authentication/main.dart';
+import 'package:two_factor_authentication/screens/add_account_screen.dart';
+import 'package:two_factor_authentication/screens/home_screen.dart';
 
 void main() {
   group('App Widget Tests', () {
