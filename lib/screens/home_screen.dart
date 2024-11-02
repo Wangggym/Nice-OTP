@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../widgets/otp_card.dart';
 import '../models/otp_account.dart';
@@ -126,20 +127,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('2FA Authenticator'),
+        title: const Text('Auth2'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: IconButton.filled(
-              icon: const Icon(Icons.shuffle, size: 28),
-              onPressed: _addRandomAccount,
-              tooltip: 'Add Random Account',
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
+          if (kDebugMode)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              child: IconButton.filled(
+                icon: const Icon(Icons.shuffle, size: 28),
+                onPressed: _addRandomAccount,
+                tooltip: 'Add Random Account',
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                ),
               ),
             ),
-          ),
           Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: IconButton.filled(

@@ -136,17 +136,17 @@ jobs:
             target: android
             build-command: flutter build apk --release
             artifact-path: build/app/outputs/flutter-apk/app-release.apk
-            artifact-name: android-release.apk
+            artifact-name: twoFactorAuth-android.apk
           - os: macos-latest
             target: macos
             build-command: flutter build macos --release
             artifact-path: build/macos/Build/Products/Release/TwoFactorAuth.dmg
-            artifact-name: macos-release.dmg
+            artifact-name: twoFactorAuth-macos.dmg
           - os: macos-latest
             target: ios
             build-command: flutter build ios --release --no-codesign
             artifact-path: build/ios/iphoneos/Runner.app
-            artifact-name: ios-release.app
+            artifact-name: twoFactorAuth-ios.app
       fail-fast: false
     
     runs-on: ${{ matrix.os }}
@@ -195,15 +195,15 @@ jobs:
         run: |
           cd build/macos/Build/Products/Release
           create-dmg \
-            --volname "Two Factor Authentication" \
+            --volname "TwoFactorAuth" \
             --window-pos 200 120 \
             --window-size 800 400 \
             --icon-size 100 \
-            --icon "two_factor_authentication.app" 200 190 \
-            --hide-extension "two_factor_authentication.app" \
+            --icon "TwoFactorAuth.app" 200 190 \
+            --hide-extension "TwoFactorAuth.app" \
             --app-drop-link 600 185 \
-            "TwoFactorAuth.dmg" \
-            "two_factor_authentication.app"
+            "twoFactorAuth.dmg" \
+            "TwoFactorAuth.app"
       
       - if: matrix.target == 'ios'
         name: Create IPA
@@ -211,14 +211,14 @@ jobs:
           cd build/ios/iphoneos
           mkdir Payload
           cp -r Runner.app Payload
-          zip -r app.ipa Payload
+          zip -r twoFactorAuth.ipa Payload
         
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
           path: |
-            ${{ matrix.artifact-path }}
-            ${{ matrix.target == 'ios' && 'build/ios/iphoneos/app.ipa' || '' }}
+            ${{ matrix.target == 'android' && 'build/app/outputs/flutter-apk/twoFactorAuth.apk' || matrix.artifact-path }}
+            ${{ matrix.target == 'ios' && 'build/ios/iphoneos/twoFactorAuth.ipa' || '' }}
           retention-days: 5
 
   # 只在打tag时创建release
@@ -228,13 +228,23 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      
+      # 调试用：列出所有文件
+      - name: List Files
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "\nDirectory contents:"
+          ls -R artifacts/
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            android-release.apk
-            macos-release.dmg
-            ios-release.app/app.ipa
+            artifacts/twoFactorAuth-android.apk/twoFactorAuth.apk
+            artifacts/twoFactorAuth-macos.dmg/twoFactorAuth.dmg
+            artifacts/twoFactorAuth-ios.app/twoFactorAuth.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
