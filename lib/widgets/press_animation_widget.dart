@@ -16,7 +16,8 @@ class PressAnimationWidget extends StatefulWidget {
   State<PressAnimationWidget> createState() => _PressAnimationWidgetState();
 }
 
-class _PressAnimationWidgetState extends State<PressAnimationWidget> with SingleTickerProviderStateMixin {
+class _PressAnimationWidgetState extends State<PressAnimationWidget>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
