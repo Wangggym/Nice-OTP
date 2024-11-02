@@ -5,6 +5,7 @@ import '../services/otp_service.dart';
 import '../services/storage_service.dart';
 import 'add_account_screen.dart';
 import 'dart:math';
+import 'edit_account_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -50,15 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _addRandomAccount() {
     final random = Random();
-    final randomIssuers = [
-      'Google',
-      'GitHub',
-      'Facebook',
-      'Twitter',
-      'Amazon',
-      'Microsoft',
-      'Apple'
-    ];
+    final randomIssuers = ['Google', 'GitHub', 'Facebook', 'Twitter', 'Amazon', 'Microsoft', 'Apple'];
     final randomIssuer = randomIssuers[random.nextInt(randomIssuers.length)];
 
     setState(() {
@@ -82,8 +75,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _editAccount(OTPAccount account) {
-    // Implement edit logic (you may want to create a new screen for editing)
+  void _editAccount(OTPAccount account) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditAccountScreen(account: account),
+      ),
+    );
+
+    if (result != null && result is OTPAccount) {
+      setState(() {
+        final index = _accounts.indexWhere((a) => a.name == account.name && a.secret == account.secret);
+        if (index != -1) {
+          _accounts[index] = result;
+          _sortAccounts();
+        }
+      });
+      _saveAccounts();
+    }
   }
 
   void _pinAccount(OTPAccount account) {
@@ -129,8 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(
-                      builder: (context) => const AddAccountScreen()),
+                  MaterialPageRoute(builder: (context) => const AddAccountScreen()),
                 );
                 if (result != null && result is OTPAccount) {
                   setState(() {
