@@ -151,7 +151,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
               if (widget.isPinned)
                 const Padding(
                   padding: EdgeInsets.only(right: 8),
-                  child: Icon(Icons.push_pin, size: 16, color: Colors.grey),
+                  child: Icon(Icons.push_pin, size: 16, color: Colors.amber),
                 ),
               FaIcon(_getServiceIcon(), size: iconSize, color: Colors.black87),
               const SizedBox(width: 12),

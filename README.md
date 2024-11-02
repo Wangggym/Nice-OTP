@@ -1,16 +1,24 @@
-# two_factor_authentication
+# Flutter OTP Manager
 
-A new Flutter project.
+A secure and user-friendly OTP (One-Time Password) manager application built with Flutter.
+
+## Features
+
+- Generate TOTP (Time-based One-Time Password) codes
+- Add and manage multiple accounts
+- Secure storage of account secrets
+- Edit existing accounts
+- Clean and intuitive user interface
+- Automatic code refresh
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
+- Flutter SDK (2.0.0 or higher)
+- Dart SDK (2.12.0 or higher)
+- Android Studio / VS Code with Flutter extensions
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Installation
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Clone the repository
