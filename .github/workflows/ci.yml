@@ -1,132 +1,240 @@
 name: CI
 
 on:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
+  push:
+    branches: [ master ]
+    tags:
+      - 'v*'
   workflow_dispatch:
-    inputs:
-      debug_enabled:
-        description: 'Run in debug mode'
-        required: false
-        type: boolean
-        default: false
+
+# 设置并发控制，确保同一分支不会重复运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.24.1'
+  JAVA_VERSION: '17'
 
 jobs:
-  test:
+  # 复用的 setup 步骤
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.value }}
+    steps:
+      - id: cache-key
+        run: echo "value=${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.lock') }}" >> $GITHUB_OUTPUT
+
+  analyze-and-test:
+    needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      # 缓存 Flutter SDK
+      - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.1'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
           cache: true
       
-      - name: Cache pub dependencies
-        uses: actions/cache@v4
+      # 缓存 pub 依赖
+      - uses: actions/cache@v4
         with:
-          path: ${{ env.PUB_CACHE }}
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: ${{ runner.os }}-pub-
+          path: |
+            ${{ env.PUB_CACHE }}
+            .dart_tool
+          key: ${{ needs.setup.outputs.cache-key }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
       
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
-      
-      - name: Check formatting
-        id: formatting
-        continue-on-error: true
-        run: dart format --set-exit-if-changed .
-      
-      - name: Apply formatting
-        if: steps.formatting.outcome == 'failure' && github.event_name == 'pull_request'
-        run: |
-          echo "Formatting Dart code..."
-          dart format .
-          
-          echo "Committing changes..."
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
-          
-          git add .
-          if ! git diff --cached --quiet; then
-            git commit -m 'style: format dart code'
-            git push
-          else
-            echo "No changes to commit"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Verify formatting
-        if: steps.formatting.outcome == 'failure' && github.event_name != 'pull_request'
-        run: dart format --set-exit-if-changed .
-      
-      - name: Analyze project source
-        id: analyze
-        continue-on-error: true
-        run: flutter analyze --fatal-infos
-      
-      - name: Fix analyzer issues
-        if: steps.analyze.outcome == 'failure' && github.event_name == 'pull_request'
-        run: |
-          dart fix --apply
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}
-          git add .
-          git diff --quiet && git diff --staged --quiet || git commit -m 'fix: apply dart fixes'
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Verify fixes
-        if: steps.analyze.outcome == 'failure'
-        run: flutter analyze --fatal-infos
-      
-      - name: Run tests with coverage
-        run: |
-          flutter test --coverage
-          # 生成HTML格式的覆盖率报告
-          sudo apt-get install -y lcov  # 安装lcov工具
-          genhtml coverage/lcov.info -o coverage/html
-      
-      - name: Upload coverage reports to Codecov
+        
+      - name: Verify Formatting
+        run: dart format --output=none --set-exit-if-changed .
+        
+      - name: Analyze Project Source
+        run: flutter analyze
+        
+      - name: Run Tests
+        run: flutter test --coverage
+        
+      - name: Upload Coverage
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-          verbose: true
+          file: coverage/lcov.info
+          fail_ci_if_error: true
 
-      # 保存覆盖率报告作为构建产物
-      - name: Archive code coverage results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage-report
-          path: coverage/
-
-  verify:
-    needs: test
+  # PR 时的构建测试
+  test-build:
     if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/verify-builds.yml
-    with:
-      ref: ${{ github.ref }}
+    needs: [setup, analyze-and-test]
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: android
+            build-command: flutter build apk --release
+          - os: macos-latest
+            target: macos
+            build-command: flutter build macos --release
+          - os: macos-latest
+            target: ios
+            build-command: flutter build ios --release --no-codesign
+      fail-fast: false
+    
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - if: matrix.target == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+      
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.PUB_CACHE }}
+            .dart_tool
+            ${{ matrix.target == 'ios' && 'ios/Pods' || '' }}
+          key: ${{ needs.setup.outputs.cache-key }}-${{ matrix.target }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-${{ matrix.target }}-
+      
+      - name: Install Dependencies
+        run: |
+          flutter pub get
+          if [ "${{ matrix.target }}" = "ios" ]; then
+            cd ios && pod install && cd ..
+          fi
+      
+      - name: Test Build ${{ matrix.target }}
+        run: ${{ matrix.build-command }}
 
+  # Release 构建
+  build:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [setup, analyze-and-test]
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: android
+            build-command: flutter build apk --release
+            artifact-path: build/app/outputs/flutter-apk/app-release.apk
+            artifact-name: android-release.apk
+          - os: macos-latest
+            target: macos
+            build-command: flutter build macos --release
+            artifact-path: build/macos/Build/Products/Release/TwoFactorAuth.dmg
+            artifact-name: macos-release.dmg
+          - os: macos-latest
+            target: ios
+            build-command: flutter build ios --release --no-codesign
+            artifact-path: build/ios/iphoneos/Runner.app
+            artifact-name: ios-release.app
+      fail-fast: false
+    
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - if: matrix.target == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+      
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.PUB_CACHE }}
+            .dart_tool
+            ${{ matrix.target == 'ios' && 'ios/Pods' || '' }}
+          key: ${{ needs.setup.outputs.cache-key }}-${{ matrix.target }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-${{ matrix.target }}-
+      
+      - name: Install Dependencies
+        run: |
+          flutter pub get
+          if [ "${{ matrix.target }}" = "ios" ]; then
+            cd ios && pod install && cd ..
+          fi
+      
+      - if: matrix.target == 'macos'
+        name: Install create-dmg
+        run: brew install create-dmg
+      
+      - name: Build ${{ matrix.target }}
+        run: ${{ matrix.build-command }}
+      
+      - if: matrix.target == 'macos'
+        name: Create DMG
+        run: |
+          cd build/macos/Build/Products/Release
+          create-dmg \
+            --volname "Two Factor Authentication" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "two_factor_authentication.app" 200 190 \
+            --hide-extension "two_factor_authentication.app" \
+            --app-drop-link 600 185 \
+            "TwoFactorAuth.dmg" \
+            "two_factor_authentication.app"
+      
+      - if: matrix.target == 'ios'
+        name: Create IPA
+        run: |
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload
+          zip -r app.ipa Payload
+        
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: |
+            ${{ matrix.artifact-path }}
+            ${{ matrix.target == 'ios' && 'build/ios/iphoneos/app.ipa' || '' }}
+          retention-days: 5
+
+  # 只在打tag时创建release
   release:
-    needs: test
-    if: (startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/master') && github.event_name == 'push'
-    uses: ./.github/workflows/release.yml
-    with:
-      ref: ${{ github.ref }}
-      is_release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            android-release.apk
+            macos-release.dmg
+            ios-release.app/app.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
