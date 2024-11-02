@@ -1,0 +1,11 @@
+{
+  "name": "two_factor_authentication",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint": "dart run tool/check.dart"
+  },
+  "devDependencies": {
+    "husky": "^9.0.11"
+  }
+}

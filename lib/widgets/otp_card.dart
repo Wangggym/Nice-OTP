@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
 import 'account_options_menu.dart';
+import 'press_animation_widget.dart';
 
 class OTPCard extends StatefulWidget {
   final OTPAccount account;
@@ -137,82 +138,78 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
     final textTheme = Theme.of(context).textTheme;
     const iconSize = 28.0;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      child: GestureDetector(
-        onTap: _copyOTPToClipboard,
-        onLongPressStart: (details) =>
-            _showOptionsMenu(context, details), // Use onLongPressStart
-        child: InkWell(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                if (widget.isPinned)
-                  const Padding(
-                    padding: EdgeInsets.only(right: 8),
-                    child: Icon(Icons.push_pin, size: 16, color: Colors.grey),
-                  ),
-                FaIcon(_getServiceIcon(),
-                    size: iconSize, color: Colors.black87),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _otp,
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.teal,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${widget.account.issuer}: ${widget.account.name}',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
+    return PressAnimationWidget(
+      onTap: _copyOTPToClipboard,
+      onLongPressStart: (details) => _showOptionsMenu(context, details),
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (widget.isPinned)
+                const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: Icon(Icons.push_pin, size: 16, color: Colors.grey),
                 ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 36,
-                  height: 36,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (_animationController != null)
-                        AnimatedBuilder(
-                          animation: _animationController!,
-                          builder: (context, child) {
-                            return CircularProgressIndicator(
-                              value: _animationController!.value,
-                              strokeWidth: 3,
-                              backgroundColor: Colors.grey[300],
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  _getProgressColor()),
-                              semanticsLabel: 'Circular progress indicator',
-                              semanticsValue:
-                                  '${(_animationController!.value * 100).toInt()}%',
-                            );
-                          },
-                        ),
-                      Text(
-                        '$_remainingSeconds',
-                        style: textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+              FaIcon(_getServiceIcon(), size: iconSize, color: Colors.black87),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _otp,
+                      style: textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.teal,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '${widget.account.issuer}: ${widget.account.name}',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: 36,
+                height: 36,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    if (_animationController != null)
+                      AnimatedBuilder(
+                        animation: _animationController!,
+                        builder: (context, child) {
+                          return CircularProgressIndicator(
+                            value: _animationController!.value,
+                            strokeWidth: 3,
+                            backgroundColor: Colors.grey[300],
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                _getProgressColor()),
+                            semanticsLabel: 'Circular progress indicator',
+                            semanticsValue:
+                                '${(_animationController!.value * 100).toInt()}%',
+                          );
+                        },
+                      ),
+                    Text(
+                      '$_remainingSeconds',
+                      style: textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -42,6 +42,8 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Node
+node_modules/
 
 # vscode config
 .vscode/
