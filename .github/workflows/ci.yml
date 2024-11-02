@@ -139,17 +139,17 @@ jobs:
             target: android
             build-command: flutter build apk --release
             artifact-path: build/app/outputs/flutter-apk/twoFactorAuth.apk
-            artifact-name: twoFactorAuth-android.apk
+            artifact-name: android-release
           - os: macos-latest
             target: macos
             build-command: flutter build macos --release
             artifact-path: build/macos/Build/Products/Release/twoFactorAuth.dmg
-            artifact-name: twoFactorAuth-macos.dmg
+            artifact-name: macos-release
           - os: macos-latest
             target: ios
             build-command: flutter build ios --release --no-codesign
             artifact-path: build/ios/iphoneos/twoFactorAuth.ipa
-            artifact-name: twoFactorAuth-ios.app
+            artifact-name: ios-release
       fail-fast: false
     
     runs-on: ${{ matrix.os }}
@@ -209,11 +209,11 @@ jobs:
             --window-pos 200 120 \
             --window-size 800 400 \
             --icon-size 100 \
-            --icon "TwoFactorAuth.app" 200 190 \
-            --hide-extension "TwoFactorAuth.app" \
+            --icon "two_factor_authentication.app" 200 190 \
+            --hide-extension "two_factor_authentication.app" \
             --app-drop-link 600 185 \
             "twoFactorAuth.dmg" \
-            "TwoFactorAuth.app"
+            "two_factor_authentication.app"
       
       - if: matrix.target == 'ios'
         name: Create IPA
@@ -239,12 +239,18 @@ jobs:
         with:
           path: artifacts
       
+      # 添加调试步骤
+      - name: List Artifacts
+        run: |
+          echo "Artifacts directory contents:"
+          ls -R artifacts/
+      
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            artifacts/twoFactorAuth-android.apk/twoFactorAuth.apk
-            artifacts/twoFactorAuth-macos.dmg/twoFactorAuth.dmg
-            artifacts/twoFactorAuth-ios.app/twoFactorAuth.ipa
+            artifacts/android-release/twoFactorAuth.apk
+            artifacts/macos-release/twoFactorAuth.dmg
+            artifacts/ios-release/twoFactorAuth.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
