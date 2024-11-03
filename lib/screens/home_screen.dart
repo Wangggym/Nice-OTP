@@ -127,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Auth2'),
+        title: const Text('auth2'),
         actions: [
           if (kDebugMode)
             Padding(

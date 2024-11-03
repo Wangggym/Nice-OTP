@@ -1,5 +1,5 @@
 {
-  "name": "two_factor_authentication",
+  "name": "auth2",
   "private": true,
   "scripts": {
     "prepare": "husky",
