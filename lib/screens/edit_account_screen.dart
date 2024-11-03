@@ -27,7 +27,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
   }
 
   String _generateKeyUri() {
-    return 'otpauth://totp/${widget.account.issuer}:${widget.account.name}?secret=${widget.account.secret}&issuer=${widget.account.issuer}&period=30&digits=6&algorithm=SHA1';
+    return 'otpauth://totp/${widget.account.issuer}:${widget.account.name}?secret=${widget.account.secret}&issuer=${widget.account.issuer}';
   }
 
   void _copyToClipboard(String text, String message) {
