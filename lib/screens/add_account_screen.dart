@@ -14,6 +14,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _nameController = TextEditingController();
   final _secretController = TextEditingController();
   final _issuerController = TextEditingController();
+  final _urlController = TextEditingController();
+  bool _isUrlMode = true; // Track which input mode is selected
 
   @override
   Widget build(BuildContext context) {
@@ -28,47 +30,106 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Account Name',
-                  hintText: 'Enter account name (e.g. johndoe@example.com)',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an account name';
-                  }
-                  return null;
+              // Input mode selector
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment(
+                    value: true,
+                    label: Text('By Key URL'),
+                  ),
+                  ButtonSegment(
+                    value: false,
+                    label: Text('By Secret Key'),
+                  ),
+                ],
+                selected: {_isUrlMode},
+                onSelectionChanged: (Set<bool> newSelection) {
+                  setState(() {
+                    _isUrlMode = newSelection.first;
+                  });
                 },
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _secretController,
-                decoration: const InputDecoration(
-                  labelText: 'Secret Key',
-                  hintText: 'Enter secret key or scan QR code',
+
+              // Show different fields based on mode
+              if (_isUrlMode)
+                TextFormField(
+                  controller: _urlController,
+                  decoration: const InputDecoration(
+                    labelText: 'URL',
+                    hintText: 'Enter otpauth:// URL',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a URL';
+                    }
+                    if (!value.startsWith('otpauth://')) {
+                      return 'Invalid OTP URL format';
+                    }
+                    return null;
+                  },
+                  onChanged: (url) {
+                    if (url.startsWith('otpauth://')) {
+                      try {
+                        final account = OTPAccount.fromUri(Uri.parse(url));
+                        setState(() {
+                          _nameController.text = account.name;
+                          _secretController.text = account.secret;
+                          _issuerController.text = account.issuer;
+                        });
+                      } catch (e) {
+                        // Invalid URL format, ignore
+                      }
+                    }
+                  },
+                )
+              else
+                Column(
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Account Name',
+                        hintText:
+                            'Enter account name (e.g. johndoe@example.com)',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an account name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _secretController,
+                      decoration: const InputDecoration(
+                        labelText: 'Secret Key',
+                        hintText: 'Enter secret key',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a secret key';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _issuerController,
+                      decoration: const InputDecoration(
+                        labelText: 'Issuer',
+                        hintText: 'Enter issuer (e.g. GitHub, Google)',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an issuer';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a secret key';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _issuerController,
-                decoration: const InputDecoration(
-                  labelText: 'Issuer',
-                  hintText: 'Enter issuer (e.g. GitHub, Google)',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter an issuer';
-                  }
-                  return null;
-                },
-              ),
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: _scanQRCode,
@@ -79,14 +140,26 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    Navigator.pop(
-                      context,
-                      OTPAccount(
-                        name: _nameController.text,
-                        secret: _secretController.text,
-                        issuer: _issuerController.text,
-                      ),
-                    );
+                    if (_isUrlMode) {
+                      try {
+                        final account =
+                            OTPAccount.fromUri(Uri.parse(_urlController.text));
+                        Navigator.pop(context, account);
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Invalid URL format: $e')),
+                        );
+                      }
+                    } else {
+                      Navigator.pop(
+                        context,
+                        OTPAccount(
+                          name: _nameController.text,
+                          secret: _secretController.text,
+                          issuer: _issuerController.text,
+                        ),
+                      );
+                    }
                   }
                 },
                 child: const Text('Add Account'),
@@ -99,7 +172,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   }
 
   Future<void> _scanQRCode() async {
-    final currentContext = context; // 保存context
+    final currentContext = context;
     try {
       final qrCode = await Navigator.push(
         context,
@@ -108,20 +181,18 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
         ),
       );
 
-      // 移除不必要的空值检查
       if (qrCode != null) {
-        final uri = Uri.parse(qrCode);
-        final account = OTPAccount.fromUri(uri);
         setState(() {
+          _isUrlMode = true; // Switch to URL mode
+          _urlController.text = qrCode;
+          final account = OTPAccount.fromUri(Uri.parse(qrCode));
           _nameController.text = account.name;
           _secretController.text = account.secret;
           _issuerController.text = account.issuer;
         });
       }
 
-      // 在使用context前检查
       if (!currentContext.mounted) return;
-      // 使用context的代码
     } catch (e) {
       if (!currentContext.mounted) return;
       ScaffoldMessenger.of(currentContext).showSnackBar(
@@ -135,6 +206,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     _nameController.dispose();
     _secretController.dispose();
     _issuerController.dispose();
+    _urlController.dispose();
     super.dispose();
   }
 }
