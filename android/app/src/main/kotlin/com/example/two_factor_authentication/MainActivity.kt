@@ -1,4 +1,4 @@
-package com.example.two_factor_authentication
+package com.example.auth2
 
 import io.flutter.embedding.android.FlutterActivity
 

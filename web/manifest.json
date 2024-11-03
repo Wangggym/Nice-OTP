@@ -1,6 +1,6 @@
 {
-    "name": "two_factor_authentication",
-    "short_name": "two_factor_authentication",
+    "name": "auth2",
+    "short_name": "auth2",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
