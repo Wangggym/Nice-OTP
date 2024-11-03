@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="auth2"
+        android:label="two_factor_authentication"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

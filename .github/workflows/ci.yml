@@ -209,11 +209,11 @@ jobs:
             --window-pos 200 120 \
             --window-size 800 400 \
             --icon-size 100 \
-            --icon "auth2.app" 200 190 \
-            --hide-extension "auth2.app" \
+            --icon "two_factor_authentication.app" 200 190 \
+            --hide-extension "two_factor_authentication.app" \
             --app-drop-link 600 185 \
             "twoFactorAuth.dmg" \
-            "auth2.app"
+            "two_factor_authentication.app"
       
       - if: matrix.target == 'ios'
         name: Create IPA
