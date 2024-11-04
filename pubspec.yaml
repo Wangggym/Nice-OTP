@@ -42,6 +42,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   font_awesome_flutter: ^10.5.0  # 使用最新版本
   qr_flutter: ^4.1.0
+  flutter_svg: ^2.0.9  # 添加这一行
 
 dev_dependencies:
   flutter_test:
@@ -96,6 +97,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  assets:
+    - assets/images/    # 添加这一行
 
 # Move flutter_launcher_icons configuration to root level
 flutter_launcher_icons:

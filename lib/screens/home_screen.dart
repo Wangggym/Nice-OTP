@@ -7,6 +7,7 @@ import '../services/storage_service.dart';
 import 'add_account_screen.dart';
 import 'dart:math';
 import 'edit_account_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -127,7 +128,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Auth2'),
+        title: SvgPicture.asset(
+          'assets/images/logo.svg',
+          height: 32,
+        ),
         actions: [
           if (kDebugMode)
             Padding(
