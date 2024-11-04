@@ -5,6 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:zxing2/qrcode.dart';
 import 'package:image/image.dart' as img;
 import 'dart:typed_data';
+import '../services/localization_service.dart';
 
 class QRScanner extends StatefulWidget {
   const QRScanner({super.key});
@@ -19,11 +20,13 @@ class _QRScannerState extends State<QRScanner> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = LocalizationService.of(context);
+
     // 桌面平台使用屏幕捕获
     if (Platform.isMacOS || Platform.isWindows || Platform.isLinux) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Capture QR Code'),
+          title: Text(l10n.translate('capture_qr_code')),
         ),
         body: Center(
           child: Column(
@@ -34,15 +37,15 @@ class _QRScannerState extends State<QRScanner> {
               else
                 ElevatedButton(
                   onPressed: _captureScreen,
-                  child: const Text('Capture Screen QR Code'),
+                  child: Text(l10n.translate("scan_qr_code_desktop")),
                 ),
               const SizedBox(height: 16),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  'Position the QR code on your screen and click the button above to scan it.',
+                  l10n.translate('scan_qr_position_hint'),
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
             ],
@@ -54,7 +57,7 @@ class _QRScannerState extends State<QRScanner> {
     else {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Scan QR Code'),
+          title: Text(l10n.translate('scan_qr_code')),
         ),
         body: MobileScanner(
           onDetect: (capture) {
@@ -72,6 +75,8 @@ class _QRScannerState extends State<QRScanner> {
   }
 
   Future<void> _captureScreen() async {
+    final l10n = LocalizationService.of(context);
+
     setState(() {
       isCapturing = true;
     });
@@ -126,7 +131,12 @@ class _QRScannerState extends State<QRScanner> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to capture or decode QR code: $e')),
+          SnackBar(
+            content: Text(
+              l10n.translate('failed_capture_qr',
+                  args: {'error': e.toString()}),
+            ),
+          ),
         );
       }
     } finally {

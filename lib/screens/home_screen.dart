@@ -1,15 +1,23 @@
-import 'package:flutter/foundation.dart';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
-import '../widgets/otp_card.dart';
+
 import '../models/otp_account.dart';
+import '../services/localization_service.dart';
 import '../services/otp_service.dart';
 import '../services/storage_service.dart';
+import '../widgets/otp_card.dart';
 import 'add_account_screen.dart';
-import 'dart:math';
 import 'edit_account_screen.dart';
+import 'more_options_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Function(Locale) onLocaleChanged;
+
+  const HomeScreen({
+    super.key,
+    required this.onLocaleChanged,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -80,7 +88,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     _saveAccounts();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${account.name} has been deleted')),
+      SnackBar(
+        content: Text(
+          LocalizationService.of(context).translate(
+            'has_been_deleted',
+            args: {'name': account.name},
+          ),
+        ),
+      ),
     );
   }
 
@@ -110,12 +125,26 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_pinnedAccountNames.contains(account.name)) {
         _pinnedAccountNames.remove(account.name);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${account.name} has been unpinned')),
+          SnackBar(
+            content: Text(
+              LocalizationService.of(context).translate(
+                'has_been_unpinned',
+                args: {'name': account.name},
+              ),
+            ),
+          ),
         );
       } else {
         _pinnedAccountNames.add(account.name);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${account.name} has been pinned')),
+          SnackBar(
+            content: Text(
+              LocalizationService.of(context).translate(
+                'has_been_pinned',
+                args: {'name': account.name},
+              ),
+            ),
+          ),
         );
       }
       _sortAccounts();
@@ -125,26 +154,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = LocalizationService.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Auth2'),
+        title: Text(
+          l10n.translate('app_name'),
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Montserrat',
+          ),
+        ),
         actions: [
-          if (kDebugMode)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: IconButton.filled(
-                icon: const Icon(Icons.shuffle, size: 28),
-                onPressed: _addRandomAccount,
-                tooltip: 'Add Random Account',
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ),
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton.filled(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MoreOptionsScreen(
+                      onAddRandomAccount: _addRandomAccount,
+                      onLocaleChanged: widget.onLocaleChanged,
+                      currentLocale: Localizations.localeOf(context),
+                    ),
+                  ),
+                );
+              },
+              tooltip: l10n.translate('more_options'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: IconButton(
               icon: const Icon(Icons.add, size: 28),
               onPressed: () async {
                 final result = await Navigator.push(
@@ -159,11 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _saveAccounts();
                 }
               },
-              tooltip: 'Add Account Manually',
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-              ),
+              tooltip: l10n.translate('add_account'),
             ),
           ),
         ],
