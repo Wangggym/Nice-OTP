@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/otp_account.dart';
 import '../widgets/qr_scanner.dart';
+import '../services/localization_service.dart';
 
 class AddAccountScreen extends StatefulWidget {
   const AddAccountScreen({super.key});
@@ -15,13 +16,15 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _secretController = TextEditingController();
   final _issuerController = TextEditingController();
   final _urlController = TextEditingController();
-  bool _isUrlMode = true; // Track which input mode is selected
+  bool _isUrlMode = true;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = LocalizationService.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Account'),
+        title: Text(l10n.translate('add_account')),
       ),
       body: Form(
         key: _formKey,
@@ -30,16 +33,15 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Input mode selector
               SegmentedButton<bool>(
-                segments: const [
+                segments: [
                   ButtonSegment(
                     value: true,
-                    label: Text('By Key URL'),
+                    label: Text(l10n.translate('by_key_url')),
                   ),
                   ButtonSegment(
                     value: false,
-                    label: Text('By Secret Key'),
+                    label: Text(l10n.translate('by_secret_key')),
                   ),
                 ],
                 selected: {_isUrlMode},
@@ -50,21 +52,19 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 },
               ),
               const SizedBox(height: 16),
-
-              // Show different fields based on mode
               if (_isUrlMode)
                 TextFormField(
                   controller: _urlController,
-                  decoration: const InputDecoration(
-                    labelText: 'URL',
-                    hintText: 'Enter otpauth:// URL',
+                  decoration: InputDecoration(
+                    labelText: l10n.translate('url'),
+                    hintText: l10n.translate('enter_url'),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter a URL';
+                      return l10n.translate('please_enter_url');
                     }
                     if (!value.startsWith('otpauth://')) {
-                      return 'Invalid OTP URL format';
+                      return l10n.translate('invalid_url');
                     }
                     return null;
                   },
@@ -88,14 +88,13 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   children: [
                     TextFormField(
                       controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Account Name',
-                        hintText:
-                            'Enter account name (e.g. johndoe@example.com)',
+                      decoration: InputDecoration(
+                        labelText: l10n.translate('account_name'),
+                        hintText: l10n.translate('enter_account_name'),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter an account name';
+                          return l10n.translate('please_enter_account');
                         }
                         return null;
                       },
@@ -103,13 +102,13 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _secretController,
-                      decoration: const InputDecoration(
-                        labelText: 'Secret Key',
-                        hintText: 'Enter secret key',
+                      decoration: InputDecoration(
+                        labelText: l10n.translate('secret_key'),
+                        hintText: l10n.translate('enter_secret_key'),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter a secret key';
+                          return l10n.translate('please_enter_secret');
                         }
                         return null;
                       },
@@ -117,13 +116,13 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _issuerController,
-                      decoration: const InputDecoration(
-                        labelText: 'Issuer',
-                        hintText: 'Enter issuer (e.g. GitHub, Google)',
+                      decoration: InputDecoration(
+                        labelText: l10n.translate('issuer'),
+                        hintText: l10n.translate('enter_issuer'),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter an issuer';
+                          return l10n.translate('please_enter_issuer');
                         }
                         return null;
                       },
@@ -134,7 +133,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               ElevatedButton.icon(
                 onPressed: _scanQRCode,
                 icon: const Icon(Icons.qr_code_scanner),
-                label: const Text('Scan QR Code'),
+                label: Text(l10n.translate('scan_qr_code')),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -147,7 +146,10 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                         Navigator.pop(context, account);
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Invalid URL format: $e')),
+                          SnackBar(
+                            content:
+                                Text('${l10n.translate('invalid_url')}: $e'),
+                          ),
                         );
                       }
                     } else {
@@ -162,7 +164,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                     }
                   }
                 },
-                child: const Text('Add Account'),
+                child: Text(l10n.translate('add_account')),
               ),
             ],
           ),
@@ -173,6 +175,8 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
 
   Future<void> _scanQRCode() async {
     final currentContext = context;
+    final l10n = LocalizationService.of(context);
+
     try {
       final qrCode = await Navigator.push(
         context,
@@ -196,7 +200,9 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     } catch (e) {
       if (!currentContext.mounted) return;
       ScaffoldMessenger.of(currentContext).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(
+          content: Text('${l10n.translate('invalid_url')}: $e'),
+        ),
       );
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../models/otp_account.dart';
+import '../services/localization_service.dart';
 
 class EditAccountScreen extends StatefulWidget {
   final OTPAccount account;
@@ -30,10 +31,11 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
     return 'otpauth://totp/${widget.account.issuer}:${widget.account.name}?secret=${widget.account.secret}&issuer=${widget.account.issuer}';
   }
 
-  void _copyToClipboard(String text, String message) {
+  void _copyToClipboard(String text) {
+    final l10n = LocalizationService.of(context);
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+      SnackBar(content: Text(l10n.translate('copied'))),
     );
   }
 
@@ -46,13 +48,15 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = LocalizationService.of(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Account'),
+        title: Text(l10n.translate('edit_account')),
         actions: [
           TextButton.icon(
             icon: const Icon(Icons.save),
-            label: const Text('Save'),
+            label: Text(l10n.translate('save')),
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 final updatedAccount = OTPAccount(
@@ -78,7 +82,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildLabelText('Issuer'),
+                    _buildLabelText(l10n.translate('issuer')),
                     TextField(
                       controller: _issuerController,
                       decoration: const InputDecoration(
@@ -88,7 +92,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                       ),
                     ),
                     const Divider(),
-                    _buildLabelText('Account Name'),
+                    _buildLabelText(l10n.translate('account_name')),
                     TextField(
                       controller: _nameController,
                       decoration: const InputDecoration(
@@ -98,17 +102,17 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                       ),
                     ),
                     const Divider(),
-                    _buildLabelText('Secret Key'),
+                    _buildLabelText(l10n.translate('secret_key')),
                     _buildReadOnlyField(widget.account.secret),
                   ],
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.all(5),
+            Padding(
+              padding: const EdgeInsets.all(5),
               child: Text(
-                'NOTE: Changes would not apply to the Key URI',
-                style: TextStyle(
+                l10n.translate('note_changes'),
+                style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 12,
                 ),
@@ -121,7 +125,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildLabelText('Key URI'),
+                    _buildLabelText(l10n.translate('key_uri')),
                     _buildReadOnlyField(_keyUri),
                   ],
                 ),
@@ -172,10 +176,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.copy, size: 20),
-          onPressed: () => _copyToClipboard(
-            value,
-            'Copied to clipboard',
-          ),
+          onPressed: () => _copyToClipboard(value),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),

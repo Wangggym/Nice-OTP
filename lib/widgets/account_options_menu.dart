@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/otp_account.dart';
+import '../services/localization_service.dart';
 
 class AccountOptionsMenu extends StatelessWidget {
   final OTPAccount account;
@@ -23,12 +24,14 @@ class AccountOptionsMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = LocalizationService.of(context);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildMenuItem(
           icon: Icons.copy,
-          title: 'Copy',
+          title: l10n.translate('copy'),
           onTap: () {
             Navigator.pop(context);
             onCopy();
@@ -36,7 +39,7 @@ class AccountOptionsMenu extends StatelessWidget {
         ),
         _buildMenuItem(
           icon: Icons.edit,
-          title: 'Edit',
+          title: l10n.translate('edit'),
           onTap: () {
             Navigator.pop(context);
             onEdit(account);
@@ -44,7 +47,7 @@ class AccountOptionsMenu extends StatelessWidget {
         ),
         _buildMenuItem(
           icon: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
-          title: isPinned ? 'Unpin' : 'Pin',
+          title: l10n.translate(isPinned ? 'unpin' : 'pin'),
           onTap: () {
             Navigator.pop(context);
             onPin(account);
@@ -52,7 +55,7 @@ class AccountOptionsMenu extends StatelessWidget {
         ),
         _buildMenuItem(
           icon: Icons.delete,
-          title: 'Delete',
+          title: l10n.translate('delete'),
           onTap: () {
             Navigator.pop(context);
             onDelete(account);

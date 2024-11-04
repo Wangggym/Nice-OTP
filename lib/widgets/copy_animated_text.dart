@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/localization_service.dart';
 
 class CopyAnimatedText extends StatefulWidget {
   final String text;
@@ -34,6 +35,8 @@ class CopyAnimatedTextState extends State<CopyAnimatedText> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final l10n = LocalizationService.of(context);
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 200),
       transitionBuilder: (Widget child, Animation<double> animation) {
@@ -42,7 +45,7 @@ class CopyAnimatedTextState extends State<CopyAnimatedText> {
       child: SizedBox(
         width: double.infinity,
         child: Text(
-          _isCopied ? 'Copied' : widget.text,
+          _isCopied ? l10n.translate('copied') : widget.text,
           key: ValueKey<bool>(_isCopied),
           style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
