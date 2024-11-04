@@ -5,6 +5,7 @@ import '../models/otp_account.dart';
 import '../services/otp_service.dart';
 import 'account_options_menu.dart';
 import 'press_animation_widget.dart';
+import 'copy_animated_text.dart';
 
 class OTPCard extends StatefulWidget {
   final OTPAccount account;
@@ -30,6 +31,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
   late String _otp;
   late int _remainingSeconds;
   AnimationController? _animationController;
+  final GlobalKey<CopyAnimatedTextState> _copyTextKey = GlobalKey();
 
   @override
   void initState() {
@@ -74,9 +76,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
 
   void _copyOTPToClipboard() {
     Clipboard.setData(ClipboardData(text: _otp.replaceAll(' ', '')));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('OTP code copied to clipboard')),
-    );
+    _copyTextKey.currentState?.triggerCopy();
   }
 
   IconData _getServiceIcon() {
@@ -159,12 +159,10 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _otp,
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal,
-                      ),
+                    CopyAnimatedText(
+                      key: _copyTextKey,
+                      text: _otp,
+                      onCopy: () {},
                     ),
                     const SizedBox(height: 2),
                     Text(
