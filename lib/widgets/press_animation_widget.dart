@@ -13,13 +13,17 @@ class PressAnimationWidget extends StatefulWidget {
   });
 
   @override
-  State<PressAnimationWidget> createState() => _PressAnimationWidgetState();
+  State<PressAnimationWidget> createState() => PressAnimationWidgetState();
 }
 
-class _PressAnimationWidgetState extends State<PressAnimationWidget>
+// Make the state class public for testing
+class PressAnimationWidgetState extends State<PressAnimationWidget>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+
+  // Expose controller for testing
+  AnimationController get controller => _controller;
 
   @override
   void initState() {

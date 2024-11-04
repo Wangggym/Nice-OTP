@@ -8,8 +8,8 @@ class LanguageService {
     'English': const Locale('en'),
     '简体中文': const Locale('zh'),
     '日本語': const Locale('ja'),
-    'Español': const Locale('es'),
-    'Français': const Locale('fr'),
+    // 'Español': const Locale('es'),
+    // 'Français': const Locale('fr'),
   };
 
   static Future<Locale> getSelectedLocale() async {

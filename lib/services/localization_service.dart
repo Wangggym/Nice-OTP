@@ -4,33 +4,56 @@ import 'package:flutter/services.dart';
 
 class LocalizationService {
   late final Locale locale;
-  // static LocalizationService? _instance;
+  static LocalizationService? instance;
   Map<String, String> _localizedStrings = {};
 
-  LocalizationService(this.locale);
+  LocalizationService(this.locale) {
+    instance = this;
+  }
 
   static LocalizationService of(BuildContext context) {
-    return Localizations.of<LocalizationService>(context, LocalizationService)!;
+    try {
+      final service =
+          Localizations.of<LocalizationService>(context, LocalizationService);
+      if (service != null) {
+        debugPrint('LocalizationService found in Localizations');
+        return service;
+      }
+
+      if (instance != null) {
+        debugPrint('LocalizationService found in static instance');
+        return instance!;
+      }
+
+      debugPrint(
+          'Creating new LocalizationService instance with platform locale');
+      return LocalizationService(View.of(context).platformDispatcher.locale);
+    } catch (e) {
+      debugPrint('Error in LocalizationService.of: $e');
+      return LocalizationService(const Locale('en'));
+    }
   }
 
   static Future<LocalizationService> load(Locale locale) async {
     final service = LocalizationService(locale);
     await service.loadTranslations();
+    instance = service;
     return service;
   }
 
   Future<void> loadTranslations() async {
     try {
-      final jsonString = await rootBundle.loadString('assets/translations/${locale.languageCode}.json');
+      final jsonString = await rootBundle
+          .loadString('assets/translations/${locale.languageCode}.json');
       Map<String, dynamic> jsonMap = json.decode(jsonString);
       _localizedStrings = jsonMap.map((key, value) {
         return MapEntry(key, value.toString());
       });
     } catch (e) {
       debugPrint('Error loading translations: $e');
-      // Fallback to English if translation file not found
       if (locale.languageCode != 'en') {
-        final jsonString = await rootBundle.loadString('assets/translations/en.json');
+        final jsonString =
+            await rootBundle.loadString('assets/translations/en.json');
         Map<String, dynamic> jsonMap = json.decode(jsonString);
         _localizedStrings = jsonMap.map((key, value) {
           return MapEntry(key, value.toString());

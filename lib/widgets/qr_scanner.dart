@@ -37,13 +37,13 @@ class _QRScannerState extends State<QRScanner> {
               else
                 ElevatedButton(
                   onPressed: _captureScreen,
-                  child: Text(l10n.translate('capture_screen_qr_code')),
+                  child: Text(l10n.translate("scan_qr_code_desktop")),
                 ),
               const SizedBox(height: 16),
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
-                  l10n.translate('position_qr_code_hint'),
+                  l10n.translate('scan_qr_position_hint'),
                   textAlign: TextAlign.center,
                   style: const TextStyle(fontSize: 16),
                 ),
