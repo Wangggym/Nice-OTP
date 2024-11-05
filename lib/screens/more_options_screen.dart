@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'language_screen.dart';
 import '../services/localization_service.dart';
+import '../widgets/custom_about_dialog.dart';
 
 class MoreOptionsScreen extends StatelessWidget {
   final Function() onAddRandomAccount;
@@ -53,11 +54,9 @@ class MoreOptionsScreen extends StatelessWidget {
             leading: const Icon(Icons.info_outline),
             title: Text(l10n.translate('about')),
             onTap: () {
-              showAboutDialog(
+              showDialog(
                 context: context,
-                applicationName: l10n.translate('app_name'),
-                applicationVersion: '1.0.0',
-                applicationLegalese: '© 2024 Auth2',
+                builder: (context) => const CustomAboutDialog(),
               );
             },
           ),
