@@ -142,8 +142,20 @@ jobs:
             artifact-name: android-release
           - os: macos-latest
             target: macos
-            build-command: flutter build macos --release
-            artifact-path: build/macos/Build/Products/Release/twoFactorAuth.dmg
+            build-command: |
+              flutter build macos --release
+              brew install create-dmg
+              create-dmg \
+                --volname "TwoFactorAuth" \
+                --window-pos 200 120 \
+                --window-size 800 400 \
+                --icon-size 100 \
+                --icon "TwoFactorAuth.app" 200 190 \
+                --hide-extension "TwoFactorAuth.app" \
+                --app-drop-link 600 185 \
+                "TwoFactorAuth.dmg" \
+                "build/macos/Build/Products/Release/TwoFactorAuth.app"
+            artifact-path: TwoFactorAuth.dmg
             artifact-name: macos-release
           - os: macos-latest
             target: ios
@@ -186,34 +198,8 @@ jobs:
             cd ios && pod install && cd ..
           fi
       
-      - if: matrix.target == 'macos'
-        name: Install create-dmg
-        run: brew install create-dmg
-      
       - name: Build ${{ matrix.target }}
         run: ${{ matrix.build-command }}
-
-      # 重命名和打包步骤
-      - if: matrix.target == 'android'
-        name: Rename APK
-        run: |
-          cd build/app/outputs/flutter-apk
-          mv app-release.apk twoFactorAuth.apk
-
-      - if: matrix.target == 'macos'
-        name: Create DMG
-        run: |
-          cd build/macos/Build/Products/Release
-          create-dmg \
-            --volname "TwoFactorAuth" \
-            --window-pos 200 120 \
-            --window-size 800 400 \
-            --icon-size 100 \
-            --icon "two_factor_authentication.app" 200 190 \
-            --hide-extension "two_factor_authentication.app" \
-            --app-drop-link 600 185 \
-            "twoFactorAuth.dmg" \
-            "two_factor_authentication.app"
       
       - if: matrix.target == 'ios'
         name: Create IPA
