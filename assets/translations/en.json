@@ -37,5 +37,6 @@
   "capture_qr_code": "Capture QR Code",
   "scan_qr_code_desktop": "Capture Screen QR Code",
   "scan_qr_position_hint": "Position the QR code on your screen and click the button above to scan it.",
-  "failed_capture_qr": "Failed to capture or decode QR code: {error}"
+  "failed_capture_qr": "Failed to capture or decode QR code: {error}",
+  "no_accounts": "Welcome! Click the button below to add your first authenticator account ✨"
 } 
