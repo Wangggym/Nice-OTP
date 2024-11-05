@@ -37,5 +37,10 @@
   "capture_qr_code": "QRコードをキャプチャ",
   "scan_qr_code_desktop": "画面のQRコードをキャプチャ",
   "scan_qr_position_hint": "QRコードを画面上に配置し、上のボタンをクリックしてスキャンしてください。",
-  "failed_capture_qr": "QRコードのキャプチャまたはデコードに失敗しました：{error}"
+  "failed_capture_qr": "QRコードのキャプチャまたはデコードに失敗しました：{error}",
+  "no_accounts": "ようこそ！下のボタンをクリックして最初の認証アカウントを追加しましょう ✨",
+  "version": "バージョン {version}",
+  "created_by": "開発者：{author}",
+  "disclaimer": "Auth2をご利用いただき、ありがとうございます！アカウントのセキュリティのため、キー情報を安全に保管してください。",
+  "close": "閉じる"
 } 

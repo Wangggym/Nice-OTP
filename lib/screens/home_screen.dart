@@ -10,6 +10,7 @@ import '../widgets/otp_card.dart';
 import 'add_account_screen.dart';
 import 'edit_account_screen.dart';
 import 'more_options_screen.dart';
+import '../widgets/empty_state_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(Locale) onLocaleChanged;
@@ -208,18 +209,36 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: _accounts.length,
-        itemBuilder: (context, index) {
-          return OTPCard(
-            account: _accounts[index],
-            onDelete: _deleteAccount,
-            onEdit: _editAccount,
-            onPin: _pinAccount,
-            isPinned: _pinnedAccountNames.contains(_accounts[index].name),
-          );
-        },
-      ),
+      body: _accounts.isEmpty
+          ? EmptyStateWidget(
+              onAddPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddAccountScreen(),
+                  ),
+                );
+                if (result != null && result is OTPAccount) {
+                  setState(() {
+                    _accounts.add(result);
+                    _sortAccounts();
+                  });
+                  _saveAccounts();
+                }
+              },
+            )
+          : ListView.builder(
+              itemCount: _accounts.length,
+              itemBuilder: (context, index) {
+                return OTPCard(
+                  account: _accounts[index],
+                  onDelete: _deleteAccount,
+                  onEdit: _editAccount,
+                  onPin: _pinAccount,
+                  isPinned: _pinnedAccountNames.contains(_accounts[index].name),
+                );
+              },
+            ),
     );
   }
 }
