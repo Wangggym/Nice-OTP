@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
+import '../services/clipboard_service.dart';
 import 'account_options_menu.dart';
 import 'press_animation_widget.dart';
 import 'copy_animated_text.dart';
@@ -74,8 +74,8 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
     return Colors.blue;
   }
 
-  void _copyOTPToClipboard() {
-    Clipboard.setData(ClipboardData(text: _otp.replaceAll(' ', '')));
+  void _copyOTPToClipboard() async {
+    await ClipboardService.copyOTP(_otp);
     _copyTextKey.currentState?.triggerCopy();
   }
 

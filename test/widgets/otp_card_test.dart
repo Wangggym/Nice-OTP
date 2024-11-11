@@ -4,6 +4,7 @@ import 'package:two_factor_authentication/widgets/otp_card.dart';
 import 'package:two_factor_authentication/models/otp_account.dart';
 import 'package:two_factor_authentication/services/localization_service.dart';
 import 'package:two_factor_authentication/widgets/account_options_menu.dart';
+import 'package:flutter/services.dart';
 
 class MockLocalizationService extends LocalizationService {
   MockLocalizationService() : super(const Locale('en'));
@@ -12,8 +13,25 @@ class MockLocalizationService extends LocalizationService {
   String translate(String key, {Map<String, String>? args}) => key;
 }
 
+class TestAccountOptionsMenu {
+  static bool menuShown = false;
+  static BuildContext? savedContext;
+  static RelativeRect? savedPosition;
+  static OTPAccount? savedAccount;
+
+  static void reset() {
+    menuShown = false;
+    savedContext = null;
+    savedPosition = null;
+    savedAccount = null;
+  }
+}
+
 void main() {
   late OTPAccount testAccount;
+
+  // Add this to track clipboard calls
+  final List<MethodCall> clipboardCalls = <MethodCall>[];
 
   setUp(() {
     LocalizationService.instance = MockLocalizationService();
@@ -22,6 +40,28 @@ void main() {
       secret: 'TESTSECRET',
       issuer: 'Google',
     );
+
+    // Set up clipboard channel mock
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      SystemChannels.platform,
+      (MethodCall methodCall) async {
+        if (methodCall.method == 'Clipboard.setData') {
+          clipboardCalls.add(methodCall);
+        }
+        return null;
+      },
+    );
+  });
+
+  tearDown(() {
+    // Clear clipboard mock
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      SystemChannels.platform,
+      null,
+    );
+    clipboardCalls.clear();
   });
 
   group('OTPCard Tests', () {
@@ -143,5 +183,45 @@ void main() {
         await tester.pump(const Duration(seconds: 1));
       });
     });
+
+    testWidgets('copies OTP to clipboard when tapped',
+        (WidgetTester tester) async {
+      await tester.runAsync(() async {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Material(
+              child: OTPCard(
+                account: testAccount,
+                onDelete: (_) {},
+                onEdit: (_) {},
+                onPin: (_) {},
+                isPinned: false,
+              ),
+            ),
+          ),
+        );
+
+        await tester.pump();
+
+        // Wait for OTP to be generated
+        await tester.pump(const Duration(seconds: 1));
+
+        // Tap the card
+        await tester.tap(find.byType(OTPCard));
+        await tester.pump();
+
+        // Verify that clipboard was called
+        expect(clipboardCalls, hasLength(1));
+        expect(
+          clipboardCalls.first.method,
+          'Clipboard.setData',
+        );
+
+        await tester.pump(const Duration(seconds: 1));
+      });
+    });
+
+    testWidgets(
+        'shows options menu on long press', (WidgetTester tester) async {});
   });
 }
