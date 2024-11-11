@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
 import 'account_options_menu.dart';
 import 'press_animation_widget.dart';
 import 'copy_animated_text.dart';
+import 'service_icon.dart';
 
 class OTPCard extends StatefulWidget {
   final OTPAccount account;
@@ -79,39 +79,6 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
     _copyTextKey.currentState?.triggerCopy();
   }
 
-  IconData _getServiceIcon() {
-    switch (widget.account.issuer.toLowerCase()) {
-      case 'google':
-        return FontAwesomeIcons.google;
-      case 'github':
-        return FontAwesomeIcons.github;
-      case 'facebook':
-        return FontAwesomeIcons.facebook;
-      case 'twitter':
-        return FontAwesomeIcons.twitter;
-      case 'amazon':
-        return FontAwesomeIcons.amazon;
-      case 'microsoft':
-        return FontAwesomeIcons.microsoft;
-      case 'apple':
-        return FontAwesomeIcons.apple;
-      case 'dropbox':
-        return FontAwesomeIcons.dropbox;
-      case 'slack':
-        return FontAwesomeIcons.slack;
-      case 'steam':
-        return FontAwesomeIcons.steam;
-      case 'paypal':
-        return FontAwesomeIcons.paypal;
-      case 'reddit':
-        return FontAwesomeIcons.reddit;
-      case 'twitch':
-        return FontAwesomeIcons.twitch;
-      default:
-        return FontAwesomeIcons.shield;
-    }
-  }
-
   void _showOptionsMenu(BuildContext context, LongPressStartDetails details) {
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -153,7 +120,10 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
                   padding: EdgeInsets.only(right: 8),
                   child: Icon(Icons.push_pin, size: 16, color: Colors.amber),
                 ),
-              FaIcon(_getServiceIcon(), size: iconSize, color: Colors.black87),
+              ServiceIcon(
+                issuer: widget.account.issuer,
+                size: iconSize,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
