@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
-    "lint": "dart run tool/check.dart"
+    "lint": "dart run tool/check.dart",
+    "coverage": "flutter test --coverage && genhtml coverage/lcov.info -o coverage/html && open coverage/html/index.html"
   },
   "devDependencies": {
     "husky": "^9.0.11"
