@@ -2,6 +2,8 @@
 
 A secure and user-friendly OTP (One-Time Password) manager application built with Flutter, supporting multiple platforms and languages.
 
+[![Coverage Status](https://codecov.io/gh/Wangggym/two_factor_authentication/branch/main/graph/badge.svg)](https://codecov.io/gh/Wangggym/two_factor_authentication)
+
 [@Latest Release](https://github.com/Wangggym/two_factor_authentication/releases)
 
 ## Features
@@ -21,7 +23,12 @@ A secure and user-friendly OTP (One-Time Password) manager application built wit
 - Flutter SDK (2.0.0 or higher)
 - Dart SDK (2.12.0 or higher)
 - Android Studio / VS Code with Flutter extensions
+- lcov (for viewing coverage reports locally)
 
 ### Installation
 
 1. Clone the repository
+
+### Testing
+
+To run tests with coverage:
