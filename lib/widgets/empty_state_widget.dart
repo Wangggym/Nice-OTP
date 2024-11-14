@@ -29,6 +29,7 @@ class EmptyStateWidget extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
+              key: const Key('add_account_button'),
               onPressed: onAddPressed,
               icon: const Icon(Icons.add),
               label: Text(l10n.translate('add_account')),
