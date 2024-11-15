@@ -8,7 +8,6 @@ env:
   FLUTTER_VERSION: '3.24.1'
   JAVA_VERSION: '17'
 
-
 jobs:
   integration_test:
     strategy:
@@ -18,6 +17,7 @@ jobs:
             target: ios
             device: "iPhone 14"
             setup-command: |
+              xcrun simctl create "iPhone 14" com.apple.CoreSimulator.SimDeviceType.iPhone-14 com.apple.CoreSimulator.SimRuntime.iOS-16-2
               UDID=$(xcrun simctl list devices | grep -w "iPhone 14" | awk 'match($0, /\(([-0-9A-F]+)\)/) { print substr( $0, RSTART+1, RLENGTH-2 )}')
               xcrun simctl boot $UDID
             test-command: flutter test integration_test/app_test.dart -d "iPhone 14"
@@ -29,11 +29,12 @@ jobs:
           - os: ubuntu-latest
             target: android
             setup-command: |
-              echo "y" | android-sdk-root/cmdline-tools/latest/bin/sdkmanager "system-images;android-30;google_apis;x86_64"
-              echo "no" | android-sdk-root/cmdline-tools/latest/bin/avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64"
+              sdkmanager --install "system-images;android-30;google_apis;x86_64"
+              echo "no" | avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64" --force
               $ANDROID_HOME/emulator/emulator -avd test_avd -no-window -no-audio -no-boot-anim &
-              adb wait-for-device
+              adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
             test-command: flutter test integration_test/app_test.dart -d android-emulator
+
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -53,6 +54,10 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ env.JAVA_VERSION }}
+
+      - if: matrix.target == 'android'
+        name: Setup Android SDK
+        uses: android-actions/setup-android@v3
       
       - if: matrix.target == 'ios'
         name: Install iOS dependencies
