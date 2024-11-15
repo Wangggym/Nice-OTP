@@ -15,6 +15,7 @@ class OTPCard extends StatefulWidget {
   final Function(OTPAccount) onEdit;
   final Function(OTPAccount) onPin;
   final bool isPinned;
+  final bool isTestMode;
 
   const OTPCard({
     super.key,
@@ -23,6 +24,7 @@ class OTPCard extends StatefulWidget {
     required this.onEdit,
     required this.onPin,
     required this.isPinned,
+    this.isTestMode = false,
   });
 
   @override
@@ -64,7 +66,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
     _animationController?.animateTo(0,
         duration: Duration(seconds: _remainingSeconds));
 
-    if (mounted) {
+    if (mounted && !widget.isTestMode) {
       Timer(const Duration(seconds: 1), () {
         if (mounted) _updateOTP();
       });
