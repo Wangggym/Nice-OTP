@@ -1,0 +1,64 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  integration_test:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: ios
+            device: "iPhone 14"
+            setup-command: |
+              UDID=$(xcrun simctl list devices | grep -w "iPhone 14" | awk 'match($0, /\(([-0-9A-F]+)\)/) { print substr( $0, RSTART+1, RLENGTH-2 )}')
+              xcrun simctl boot $UDID
+            test-command: flutter test integration_test/app_test.dart -d "iPhone 14"
+          
+          - os: macos-latest
+            target: macos
+            test-command: flutter test integration_test/app_test.dart -d macos
+          
+          - os: ubuntu-latest
+            target: android
+            setup-command: |
+              echo "y" | android-sdk-root/cmdline-tools/latest/bin/sdkmanager "system-images;android-30;google_apis;x86_64"
+              echo "no" | android-sdk-root/cmdline-tools/latest/bin/avdmanager create avd -n test_avd -k "system-images;android-30;google_apis;x86_64"
+              $ANDROID_HOME/emulator/emulator -avd test_avd -no-window -no-audio -no-boot-anim &
+              adb wait-for-device
+            test-command: flutter test integration_test/app_test.dart -d android-emulator
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.19.0'
+          channel: 'stable'
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - if: matrix.target == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - if: matrix.target == 'ios'
+        name: Install iOS dependencies
+        run: |
+          cd ios
+          pod install
+          cd ..
+      
+      - name: Setup test device
+        if: matrix.setup-command != ''
+        run: ${{ matrix.setup-command }}
+      
+      - name: Run integration tests
+        run: ${{ matrix.test-command }}
