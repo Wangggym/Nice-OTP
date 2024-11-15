@@ -4,6 +4,11 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  FLUTTER_VERSION: '3.24.1'
+  JAVA_VERSION: '17'
+
+
 jobs:
   integration_test:
     strategy:
@@ -37,7 +42,7 @@ jobs:
       
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.0'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: 'stable'
       
       - name: Install dependencies
@@ -47,7 +52,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '17'
+          java-version: ${{ env.JAVA_VERSION }}
       
       - if: matrix.target == 'ios'
         name: Install iOS dependencies
