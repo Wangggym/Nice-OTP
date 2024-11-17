@@ -207,6 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
               tooltip: l10n.translate('add_account'),
             ),
           ),
+          const Padding(padding: EdgeInsets.only(right: 100.0)),
         ],
       ),
       body: _accounts.isEmpty

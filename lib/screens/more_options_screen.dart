@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'language_screen.dart';
 import '../services/localization_service.dart';
 import '../widgets/custom_about_dialog.dart';
@@ -26,15 +25,15 @@ class MoreOptionsScreen extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          if (kDebugMode)
-            ListTile(
-              leading: const Icon(Icons.shuffle),
-              title: Text(l10n.translate('add_random_account')),
-              onTap: () {
-                onAddRandomAccount();
-                Navigator.pop(context);
-              },
-            ),
+          // if (kDebugMode)
+          ListTile(
+            leading: const Icon(Icons.shuffle),
+            title: Text(l10n.translate('add_random_account')),
+            onTap: () {
+              onAddRandomAccount();
+              Navigator.pop(context);
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.language),
             title: Text(l10n.translate('language')),
