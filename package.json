@@ -4,7 +4,9 @@
   "scripts": {
     "prepare": "husky",
     "lint": "dart run tool/check.dart",
-    "coverage": "flutter test --coverage && genhtml coverage/lcov.info -o coverage/html && open coverage/html/index.html"
+    "coverage": "flutter test --coverage && genhtml coverage/lcov.info -o coverage/html && open coverage/html/index.html",
+    "wechat": "dart scripts/build_wechat.dart",
+    "wechat:dev": "dart scripts/build_wechat.dart --devmode"
   },
   "devDependencies": {
     "husky": "^9.0.11"
