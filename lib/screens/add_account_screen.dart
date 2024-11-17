@@ -137,6 +137,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
               ),
               const SizedBox(height: 16),
               ElevatedButton(
+                key: const Key('confirm_add_account_button'),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     if (_isUrlMode) {

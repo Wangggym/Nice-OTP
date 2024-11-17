@@ -1,0 +1,35 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches: [ master ]
+
+env:
+  FLUTTER_VERSION: '3.24.1'
+  JAVA_VERSION: '17'
+
+jobs:
+  integration_test:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: macos
+            test-command: flutter test integration_test/app_test.dart -d macos
+
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Run integration tests
+        run: ${{ matrix.test-command }}

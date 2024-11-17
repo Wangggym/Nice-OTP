@@ -49,7 +49,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  watcher: ^1.1.0  # 替换 flutter_test_watcher
+  integration_test:
+    sdk: flutter
+  watcher: ^1.1.0
   mockito: ^5.4.0
   build_runner: ^2.4.0
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
@@ -13,6 +15,7 @@ class OTPCard extends StatefulWidget {
   final Function(OTPAccount) onEdit;
   final Function(OTPAccount) onPin;
   final bool isPinned;
+  final bool isTestMode;
 
   const OTPCard({
     super.key,
@@ -21,6 +24,7 @@ class OTPCard extends StatefulWidget {
     required this.onEdit,
     required this.onPin,
     required this.isPinned,
+    this.isTestMode = false,
   });
 
   @override
@@ -50,15 +54,23 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
   }
 
   void _updateOTP() {
+    if (!mounted) return;
+
     final otpData = OTPService.generateOTP(widget.account.secret);
     setState(() {
       _otp = _formatOTP(otpData.otp);
       _remainingSeconds = otpData.remainingSeconds;
     });
-    _animationController?.value = _remainingSeconds / 30; // 从剩余时间比例开始
+
+    _animationController?.value = _remainingSeconds / 30;
     _animationController?.animateTo(0,
-        duration: Duration(seconds: _remainingSeconds)); // 动画到0
-    Future.delayed(const Duration(seconds: 1), _updateOTP);
+        duration: Duration(seconds: _remainingSeconds));
+
+    if (mounted && !widget.isTestMode) {
+      Timer(const Duration(seconds: 1), () {
+        if (mounted) _updateOTP();
+      });
+    }
   }
 
   String _formatOTP(String otp) {

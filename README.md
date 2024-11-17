@@ -2,6 +2,8 @@
 
 A secure and user-friendly OTP (One-Time Password) manager application built with Flutter, supporting multiple platforms and languages.
 
+[![Integration Tests](https://img.shields.io/badge/Integration%20Tests-Passing-brightgreen)](https://github.com/Wangggym/two_factor_authentication/actions)
+[![Coverage](https://img.shields.io/badge/Coverage-XX%25-brightgreen)](https://github.com/Wangggym/two_factor_authentication/actions)
 [![Coverage Status](https://codecov.io/gh/Wangggym/two_factor_authentication/branch/master/graph/badge.svg)](https://codecov.io/gh/Wangggym/two_factor_authentication)
 
 [@Latest Release](https://github.com/Wangggym/two_factor_authentication/releases)

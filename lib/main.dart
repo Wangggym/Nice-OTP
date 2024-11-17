@@ -3,13 +3,23 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/home_screen.dart';
 import 'services/language_service.dart';
 import 'services/localization_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final isTestMode = prefs.getBool('test_mode') ?? false;
+
+  runApp(MyApp(isTestMode: isTestMode));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final bool isTestMode;
+
+  const MyApp({
+    super.key,
+    this.isTestMode = false,
+  });
 
   @override
   State<MyApp> createState() => _MyAppState();
