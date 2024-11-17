@@ -42,5 +42,19 @@
   "version": "Version {version}",
   "created_by": "Created by {author}",
   "disclaimer": "Thank you for using Auth2! For your account security, please keep your keys safe.",
-  "close": "Close"
+  "close": "Close",
+  "accounts": "Accounts",
+  "me": "Me",
+  "cloud_sync": "Cloud Sync",
+  "coming_soon": "Coming soon...",
+  "cloud_sync_description": "Securely sync your 2FA tokens across multiple devices",
+  "coming_soon_message": "We're working hard to bring you secure cloud synchronization. Stay tuned!",
+  "ok": "OK",
+  "platform_support_message": "Planning to support all major platforms. Stay tuned!",
+  "account_limit_reached": "Maximum limit of 15 accounts reached",
+  "clear_all_accounts": "Clear All Accounts",
+  "clear_all_accounts_confirm": "Are you sure you want to clear all accounts? This action cannot be undone.",
+  "clear": "Clear",
+  "cancel": "Cancel",
+  "accounts_cleared": "All accounts have been cleared"
 } 

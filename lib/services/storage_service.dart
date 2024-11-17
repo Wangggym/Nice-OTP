@@ -5,6 +5,7 @@ import '../models/otp_account.dart';
 class StorageService {
   static const String _key = 'otp_accounts';
   static const String _pinnedKey = 'pinned_accounts';
+  static const int maxAccounts = 5;
 
   static Future<void> saveAccounts(List<OTPAccount> accounts) async {
     final prefs = await SharedPreferences.getInstance();
@@ -33,5 +34,9 @@ class StorageService {
   static Future<List<String>> loadPinnedAccounts() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList(_pinnedKey) ?? [];
+  }
+
+  static Future<bool> canAddMoreAccounts() async {
+    return (await loadAccounts()).length < maxAccounts;
   }
 }

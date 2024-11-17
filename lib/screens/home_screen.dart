@@ -1,16 +1,12 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 import '../models/otp_account.dart';
 import '../services/localization_service.dart';
-import '../services/otp_service.dart';
 import '../services/storage_service.dart';
-import '../widgets/otp_card.dart';
-import 'add_account_screen.dart';
 import 'edit_account_screen.dart';
-import 'more_options_screen.dart';
-import '../widgets/empty_state_widget.dart';
+import 'tabs/home_tab.dart';
+import 'tabs/add_tab.dart';
+import 'tabs/profile_tab.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(Locale) onLocaleChanged;
@@ -27,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<OTPAccount> _accounts = [];
   List<String> _pinnedAccountNames = [];
+  int _selectedIndex = 0;
 
   @override
   void initState() {
@@ -57,29 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _saveAccounts() async {
     await StorageService.saveAccounts(_accounts);
     await StorageService.savePinnedAccounts(_pinnedAccountNames);
-  }
-
-  void _addRandomAccount() {
-    final random = Random();
-    final randomIssuers = [
-      'Google',
-      'GitHub',
-      'Facebook',
-      'Twitter',
-      'Amazon',
-      'Microsoft',
-      'Apple'
-    ];
-    final randomIssuer = randomIssuers[random.nextInt(randomIssuers.length)];
-
-    setState(() {
-      _accounts.add(OTPAccount(
-        name: "Account ${_accounts.length + 1}",
-        secret: OTPService.generateRandomSecret(),
-        issuer: randomIssuer,
-      ));
-    });
-    _saveAccounts();
   }
 
   void _deleteAccount(OTPAccount account) {
@@ -159,87 +133,84 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.translate('app_name'),
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Montserrat',
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            l10n.translate('app_name'),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Montserrat',
+            ),
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 4.0),
-            child: IconButton(
-              icon: const Icon(Icons.more_vert),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MoreOptionsScreen(
-                      onAddRandomAccount: _addRandomAccount,
-                      onLocaleChanged: widget.onLocaleChanged,
-                      currentLocale: Localizations.localeOf(context),
-                    ),
-                  ),
-                );
-              },
-              tooltip: l10n.translate('more_options'),
-            ),
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          HomeTab(
+            accounts: _accounts,
+            pinnedAccountNames: _pinnedAccountNames,
+            onDelete: _deleteAccount,
+            onEdit: _editAccount,
+            onPin: _pinAccount,
+            onAddPressed: () =>
+                setState(() => _selectedIndex = 1), // Switch to Add tab
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 4.0),
-            child: IconButton(
-              icon: const Icon(Icons.add, size: 28),
-              onPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const AddAccountScreen()),
-                );
-                if (result != null && result is OTPAccount) {
-                  setState(() {
-                    _accounts.add(result);
-                  });
-                  _saveAccounts();
-                }
-              },
-              tooltip: l10n.translate('add_account'),
-            ),
+          AddTab(
+            onAccountAdded: (account) {
+              setState(() {
+                _accounts.add(account);
+                _sortAccounts();
+                _selectedIndex = 0; // Switch back to Home tab
+              });
+              _saveAccounts();
+            },
+            onAccountDeleteAll: () {
+              setState(() {
+                _accounts = [];
+                _pinnedAccountNames = [];
+                _selectedIndex = 0; // Switch back to Home tab
+              });
+              _saveAccounts();
+            },
           ),
-          const Padding(padding: EdgeInsets.only(right: 100.0)),
+          ProfileTab(
+            onLocaleChanged: widget.onLocaleChanged,
+            currentLocale: Localizations.localeOf(context),
+          ),
         ],
       ),
-      body: _accounts.isEmpty
-          ? EmptyStateWidget(
-              onAddPressed: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AddAccountScreen(),
-                  ),
-                );
-                if (result != null && result is OTPAccount) {
-                  setState(() {
-                    _accounts.add(result);
-                    _sortAccounts();
-                  });
-                  _saveAccounts();
-                }
-              },
-            )
-          : ListView.builder(
-              itemCount: _accounts.length,
-              itemBuilder: (context, index) {
-                return OTPCard(
-                  account: _accounts[index],
-                  onDelete: _deleteAccount,
-                  onEdit: _editAccount,
-                  onPin: _pinAccount,
-                  isPinned: _pinnedAccountNames.contains(_accounts[index].name),
-                );
-              },
-            ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) async {
+          if (index == 1 && !(await StorageService.canAddMoreAccounts())) {
+            // ignore: use_build_context_synchronously
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.translate('account_limit_reached')),
+              ),
+            );
+          }
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.list),
+            label: l10n.translate('accounts'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.add),
+            label: l10n.translate('add_account'),
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person),
+            label: l10n.translate('me'),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -32,6 +32,14 @@ class CustomAboutDialog extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
+                l10n.translate('platform_support_message'),
+                style: textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[700],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
                 '© 2024 Auth2',
                 style: textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
