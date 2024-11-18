@@ -56,5 +56,8 @@
   "clear_all_accounts_confirm": "すべてのアカウントを削除してもよろしいですか？この操作は取り消せません。",
   "clear": "削除",
   "cancel": "キャンセル",
-  "accounts_cleared": "すべてのアカウントを削除しました"
+  "accounts_cleared": "すべてのアカウントを削除しました",
+  "delete_account": "アカウントを削除",
+  "delete_account_confirm": "このアカウントを削除してもよろしいですか？",
+  "account_deleted": "アカウントを削除しました"
 } 

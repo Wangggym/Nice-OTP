@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/services/localization_service.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
 import '../services/clipboard_service.dart';
@@ -77,6 +78,30 @@ class _OTPCardState extends State<OTPCard> {
     _copyTextKey.currentState?.triggerCopy();
   }
 
+  void _handleDelete(BuildContext context) {
+    final l10n = LocalizationService.of(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.translate('delete_account')),
+        content: Text(l10n.translate('delete_account_confirm')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.translate('cancel')),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.onDelete(widget.account);
+              Navigator.pop(context);
+            },
+            child: Text(l10n.translate('delete')),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showOptionsMenu(BuildContext context, LongPressStartDetails details) {
     final RenderBox overlay =
         Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -90,7 +115,7 @@ class _OTPCardState extends State<OTPCard> {
       context: context,
       position: position,
       account: widget.account,
-      onDelete: widget.onDelete,
+      onDelete: (account) => _handleDelete(context),
       onEdit: widget.onEdit,
       onPin: widget.onPin,
       onCopy: _copyOTPToClipboard,

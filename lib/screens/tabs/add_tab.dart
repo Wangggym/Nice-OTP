@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:mpflutter_core/mpflutter_core.dart';
+import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
 import '../../models/otp_account.dart';
 import '../../services/localization_service.dart';
 import '../../services/otp_service.dart';
@@ -64,13 +68,25 @@ class _AddAccountFormState extends State<AddAccountForm> {
     final l10n = LocalizationService.of(context);
 
     try {
-      final qrCode = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const QRScanner(),
-        ),
-      );
+      // ignore: prefer_typing_uninitialized_variables
+      var qrCode;
 
+      if (kIsMPFlutterWechat || kIsMPFlutter || kIsMPFlutterDevmode) {
+        final completer = Completer<String>();
+        wx.scanCode(ScanCodeOption()
+          ..success = (result) {
+            qrCode = result.result;
+            completer.complete(qrCode);
+          });
+        qrCode = await completer.future;
+      } else {
+        qrCode = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const QRScanner(),
+          ),
+        );
+      }
       if (qrCode != null) {
         setState(() {
           _isUrlMode = true;

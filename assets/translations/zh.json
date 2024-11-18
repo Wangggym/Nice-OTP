@@ -56,5 +56,8 @@
   "clear_all_accounts_confirm": "确定要清除所有账户吗？此操作无法撤消。",
   "clear": "清除",
   "cancel": "取消",
-  "accounts_cleared": "所有账户已清除"
+  "accounts_cleared": "所有账户已清除",
+  "delete_account": "删除账号",
+  "delete_account_confirm": "确定要删除这个账号吗？",
+  "account_deleted": "账号已删除"
 } 
