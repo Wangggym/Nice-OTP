@@ -5,8 +5,8 @@ import '../services/localization_service.dart';
 import '../services/storage_service.dart';
 import 'edit_account_screen.dart';
 import 'tabs/home_tab.dart';
-import 'tabs/add_tab.dart';
-import 'tabs/profile_tab.dart';
+import 'tabs/add_tab.dart' deferred as add_tab;
+import 'tabs/profile_tab.dart' deferred as profile_tab;
 
 class HomeScreen extends StatefulWidget {
   final Function(Locale) onLocaleChanged;
@@ -157,27 +157,37 @@ class _HomeScreenState extends State<HomeScreen> {
             onAddPressed: () =>
                 setState(() => _selectedIndex = 1), // Switch to Add tab
           ),
-          AddTab(
-            onAccountAdded: (account) {
-              setState(() {
-                _accounts.add(account);
-                _sortAccounts();
-                _selectedIndex = 0; // Switch back to Home tab
-              });
-              _saveAccounts();
-            },
-            onAccountDeleteAll: () {
-              setState(() {
-                _accounts = [];
-                _pinnedAccountNames = [];
-                _selectedIndex = 0; // Switch back to Home tab
-              });
-              _saveAccounts();
+          FutureBuilder(
+            future: add_tab.loadLibrary(),
+            builder: (context, snapshot) {
+              return add_tab.AddTab(
+                onAccountAdded: (account) {
+                  setState(() {
+                    _accounts.add(account);
+                    _sortAccounts();
+                    _selectedIndex = 0; // Switch back to Home tab
+                  });
+                  _saveAccounts();
+                },
+                onAccountDeleteAll: () {
+                  setState(() {
+                    _accounts = [];
+                    _pinnedAccountNames = [];
+                    _selectedIndex = 0; // Switch back to Home tab
+                  });
+                  _saveAccounts();
+                },
+              );
             },
           ),
-          ProfileTab(
-            onLocaleChanged: widget.onLocaleChanged,
-            currentLocale: Localizations.localeOf(context),
+          FutureBuilder(
+            future: profile_tab.loadLibrary(),
+            builder: (context, snapshot) {
+              return profile_tab.ProfileTab(
+                onLocaleChanged: widget.onLocaleChanged,
+                currentLocale: Localizations.localeOf(context),
+              );
+            },
           ),
         ],
       ),
