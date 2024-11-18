@@ -161,6 +161,8 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
+        fontFamily: "MiniTex",
+        fontFamilyFallback: const ["MiniTex"],
       ),
       home: HomeScreen(onLocaleChanged: _handleLocaleChange),
     );
