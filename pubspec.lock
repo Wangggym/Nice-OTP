@@ -502,10 +502,10 @@ packages:
     dependency: "direct main"
     description:
       name: mpflutter_build_tools
-      sha256: "1fdf995cb815e6241b10eca3f202b36db0a2cdd3f24449ef6bb4a93e287ea552"
+      sha256: "5a91d3d73369d7e4d7623931f9f0bb4c039911bf98ff18458a00ec6b1db80d6f"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.8"
+    version: "2.7.9"
   mpflutter_core:
     dependency: "direct main"
     description:
