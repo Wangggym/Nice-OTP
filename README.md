@@ -14,7 +14,13 @@ A secure and user-friendly OTP (One-Time Password) manager application built wit
 - Copy OTP codes with one click
 - Visual countdown timer with color indicators
 - Multi-language support (English, 简体中文, 日本語)
-- Cross-platform compatibility (Mobile & Desktop)
+- Cross-platform compatibility (Mobile, Desktop & WeChat Mini Program)
+
+## WeChat Mini Program
+
+
+![image](https://github.com/user-attachments/assets/b13fc579-c79e-4d02-a3b5-251bb8c2e725)
+
 
 ## Getting Started
 
