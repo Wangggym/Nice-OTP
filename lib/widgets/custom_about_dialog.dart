@@ -40,7 +40,7 @@ class CustomAboutDialog extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '© 2024 Auth2',
+                '© 2024 Nice OTP',
                 style: textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                 ),

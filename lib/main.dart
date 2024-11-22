@@ -149,7 +149,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     return MaterialApp(
-      title: 'Auth2',
+      title: 'Nice OTP',
       locale: _locale,
       supportedLocales: LanguageService.supportedLocales.values,
       localizationsDelegates: const [

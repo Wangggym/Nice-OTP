@@ -1,5 +1,5 @@
 {
-  "app_name": "Auth2",
+  "app_name": "Nice OTP",
   "more_options": "More Options",
   "add_random_account": "Add Random Account",
   "language": "Language",
@@ -41,7 +41,7 @@
   "no_accounts": "Welcome! Click the button below to add your first authenticator account ✨",
   "version": "Version {version}",
   "created_by": "Created by {author}",
-  "disclaimer": "Thank you for using Auth2! For your account security, please keep your keys safe.",
+  "disclaimer": "Thank you for using Nice OTP! For your account security, please keep your keys safe.",
   "close": "Close",
   "accounts": "Accounts",
   "me": "Me",

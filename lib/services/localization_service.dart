@@ -16,7 +16,7 @@ class LocalizationService {
       final service =
           Localizations.of<LocalizationService>(context, LocalizationService);
       if (service != null) {
-        debugPrint('LocalizationService found in Localizations');
+        // debugPrint('LocalizationService found in Localizations');
         return service;
       }
 
