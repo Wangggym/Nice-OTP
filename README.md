@@ -6,6 +6,12 @@ A secure and user-friendly OTP (One-Time Password) manager application built wit
 
 [@Latest Release](https://github.com/Wangggym/two_factor_authentication/releases)
 
+
+## WeChat Mini Program
+
+
+![image](https://github.com/user-attachments/assets/b13fc579-c79e-4d02-a3b5-251bb8c2e725)
+
 ## Features
 
 - Generate TOTP (Time-based One-Time Password) codes with automatic refresh
@@ -16,10 +22,6 @@ A secure and user-friendly OTP (One-Time Password) manager application built wit
 - Multi-language support (English, 简体中文, 日本語)
 - Cross-platform compatibility (Mobile, Desktop & WeChat Mini Program)
 
-## WeChat Mini Program
-
-
-![image](https://github.com/user-attachments/assets/b13fc579-c79e-4d02-a3b5-251bb8c2e725)
 
 
 ## Getting Started
