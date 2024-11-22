@@ -1,30 +1,41 @@
 import 'dart:math';
 import 'package:crypto/crypto.dart';
-import 'dart:typed_data';
+
+import 'package:flutter/foundation.dart';
 
 class OTPService {
   static OTPData generateOTP(String secret,
       {int timeStep = 30, int digits = 6}) {
-    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-    final step = now ~/ timeStep;
-    final hmac = Hmac(sha1, Base32.decode(secret));
-    final hmacResult = hmac.convert(intToBytes(step));
-    final offset = hmacResult.bytes[hmacResult.bytes.length - 1] & 0xf;
-    final binary = ByteData.sublistView(Uint8List.fromList(
-                hmacResult.bytes.sublist(offset, offset + 4)))
-            .getUint32(0, Endian.big) &
-        0x7fffffff;
-    final otp = binary % pow(10, digits).toInt();
-    final remainingSeconds = timeStep - (now % timeStep);
-    return OTPData(
-      otp: otp.toString().padLeft(digits, '0'),
-      remainingSeconds: remainingSeconds,
-    );
+    try {
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final step = now ~/ timeStep;
+      final hmac = Hmac(sha1, Base32.decode(secret));
+      final hmacResult = hmac.convert(intToBytes(step));
+      final offset = hmacResult.bytes[hmacResult.bytes.length - 1] & 0xf;
+      final binary = ByteData.sublistView(Uint8List.fromList(
+                  hmacResult.bytes.sublist(offset, offset + 4)))
+              .getUint32(0, Endian.big) &
+          0x7fffffff;
+      final otp = binary % pow(10, digits).toInt();
+      final remainingSeconds = timeStep - (now % timeStep);
+      return OTPData(
+        otp: otp.toString().padLeft(digits, '0'),
+        remainingSeconds: remainingSeconds,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Failed to generate OTP: $e');
+      }
+      return OTPData(otp: '000000', remainingSeconds: 30);
+    }
   }
 
   static List<int> intToBytes(int value) {
     var result = Uint8List(8);
-    ByteData.view(result.buffer).setInt64(0, value, Endian.big);
+    for (int i = 7; i >= 0; i--) {
+      result[i] = value & 0xff;
+      value >>= 8;
+    }
     return result;
   }
 

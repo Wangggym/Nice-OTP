@@ -206,6 +206,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.7"
+  dio:
+    dependency: transitive
+    description:
+      name: dio
+      sha256: "5598aa796bbf4699afd5c67c0f5f6e2ed542afc956884b9cd58c306966efc260"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.7.0"
+  dio_web_adapter:
+    dependency: transitive
+    description:
+      name: dio_web_adapter
+      sha256: "33259a9276d6cea88774a0000cfae0d861003497755969c92faa223108620dc8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
+  es_compression:
+    dependency: transitive
+    description:
+      name: es_compression
+      sha256: b74194ef670a0ea26106f0cc96131cf05c65706467ed985096b6fab501ca7028
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.12"
   fake_async:
     dependency: transitive
     description:
@@ -474,6 +498,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.4.4"
+  mpflutter_build_tools:
+    dependency: "direct main"
+    description:
+      name: mpflutter_build_tools
+      sha256: "1fdf995cb815e6241b10eca3f202b36db0a2cdd3f24449ef6bb4a93e287ea552"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.7.8"
+  mpflutter_core:
+    dependency: "direct main"
+    description:
+      name: mpflutter_core
+      sha256: "2a3bc5a331ba68782ab5479a6110a81e40e431b6d84b6ea2c30df72cff9bd1c9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.7.6"
+  mpflutter_wechat_api:
+    dependency: "direct main"
+    description:
+      name: mpflutter_wechat_api
+      sha256: "7ae0e08546acb6d77d65e9c6d530dd83604fe2b9eddfcd963ca3d6845b29133c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.4"
   package_config:
     dependency: transitive
     description:
@@ -594,6 +642,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.2"
+  rename_app:
+    dependency: "direct dev"
+    description:
+      name: rename_app
+      sha256: "0267b7507ca70ede47b1e5a0b391e547d0e0854956a00fad2585fb6c5968dc24"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.1"
   screen_capturer:
     dependency: "direct main"
     description:
@@ -634,6 +690,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
+  screen_retriever:
+    dependency: transitive
+    description:
+      name: screen_retriever
+      sha256: "6ee02c8a1158e6dae7ca430da79436e3b1c9563c8cf02f524af997c201ac2b90"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.9"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -735,6 +799,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
+  sprintf:
+    dependency: transitive
+    description:
+      name: sprintf
+      sha256: "1fc9ffe69d4df602376b52949af107d8f5703b77cda567c4d7d86a0693120f23"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.0"
   stack_trace:
     dependency: transitive
     description:
@@ -807,6 +879,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  uuid:
+    dependency: transitive
+    description:
+      name: uuid
+      sha256: a5be9ef6618a7ac1e964353ef476418026db906c4facdedaa299b7a2e71690ff
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.5.1"
   vector_graphics:
     dependency: transitive
     description:
@@ -839,6 +919,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  visibility_detector:
+    dependency: transitive
+    description:
+      name: visibility_detector
+      sha256: dd5cc11e13494f432d15939c3aa8ae76844c42b723398643ce9addb88a5ed420
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0+2"
   vm_service:
     dependency: transitive
     description:
@@ -859,10 +947,10 @@ packages:
     dependency: transitive
     description:
       name: web
-      sha256: cd3543bd5798f6ad290ea73d210f423502e71900302dde696f8bff84bf89a1cb
+      sha256: "97da13628db363c635202ad97068d47c5b8aa555808e7a9411963c533b449b27"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.0"
+    version: "0.5.1"
   web_socket:
     dependency: transitive
     description:
@@ -887,6 +975,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.7.2"
+  window_manager:
+    dependency: transitive
+    description:
+      name: window_manager
+      sha256: "8699323b30da4cdbe2aa2e7c9de567a6abd8a97d9a5c850a3c86dcd0b34bbfbf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.9"
   xdg_directories:
     dependency: transitive
     description:
@@ -911,6 +1007,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  yaml_edit:
+    dependency: transitive
+    description:
+      name: yaml_edit
+      sha256: e9c1a3543d2da0db3e90270dbb1e4eebc985ee5e3ffe468d83224472b2194a5f
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.1"
   zxing2:
     dependency: "direct main"
     description:

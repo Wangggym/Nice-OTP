@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/services/localization_service.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
 import '../services/clipboard_service.dart';
@@ -6,6 +9,7 @@ import 'account_options_menu.dart';
 import 'press_animation_widget.dart';
 import 'copy_animated_text.dart';
 import 'service_icon.dart';
+import 'otp_countdown_timer.dart';
 
 class OTPCard extends StatefulWidget {
   final OTPAccount account;
@@ -27,26 +31,34 @@ class OTPCard extends StatefulWidget {
   State<OTPCard> createState() => _OTPCardState();
 }
 
-class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
+class _OTPCardState extends State<OTPCard> {
   late String _otp;
+  late Timer _timer;
   late int _remainingSeconds;
-  AnimationController? _animationController;
   final GlobalKey<CopyAnimatedTextState> _copyTextKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 30),
-    );
     _updateOTP();
+    _startTimer();
   }
 
   @override
   void dispose() {
-    _animationController?.dispose();
+    _timer.cancel();
     super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _remainingSeconds--;
+        if (_remainingSeconds <= 0) {
+          _updateOTP();
+        }
+      });
+    });
   }
 
   void _updateOTP() {
@@ -55,28 +67,39 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
       _otp = _formatOTP(otpData.otp);
       _remainingSeconds = otpData.remainingSeconds;
     });
-    _animationController?.value = _remainingSeconds / 30; // 从剩余时间比例开始
-    _animationController?.animateTo(0,
-        duration: Duration(seconds: _remainingSeconds)); // 动画到0
-    Future.delayed(const Duration(seconds: 1), _updateOTP);
   }
 
   String _formatOTP(String otp) {
     return '${otp.substring(0, 3)} ${otp.substring(3)}';
   }
 
-  Color _getProgressColor() {
-    if (_remainingSeconds <= 5) {
-      return Colors.red;
-    } else if (_remainingSeconds <= 10) {
-      return Colors.orange;
-    }
-    return Colors.blue;
-  }
-
   void _copyOTPToClipboard() async {
     await ClipboardService.copyOTP(_otp);
     _copyTextKey.currentState?.triggerCopy();
+  }
+
+  void _handleDelete(BuildContext context) {
+    final l10n = LocalizationService.of(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.translate('delete_account')),
+        content: Text(l10n.translate('delete_account_confirm')),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.translate('cancel')),
+          ),
+          TextButton(
+            onPressed: () {
+              widget.onDelete(widget.account);
+              Navigator.pop(context);
+            },
+            child: Text(l10n.translate('delete')),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showOptionsMenu(BuildContext context, LongPressStartDetails details) {
@@ -92,7 +115,7 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
       context: context,
       position: position,
       account: widget.account,
-      onDelete: widget.onDelete,
+      onDelete: (account) => _handleDelete(context),
       onEdit: widget.onEdit,
       onPin: widget.onPin,
       onCopy: _copyOTPToClipboard,
@@ -146,36 +169,8 @@ class _OTPCardState extends State<OTPCard> with SingleTickerProviderStateMixin {
                 ),
               ),
               const SizedBox(width: 12),
-              SizedBox(
-                width: 36,
-                height: 36,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (_animationController != null)
-                      AnimatedBuilder(
-                        animation: _animationController!,
-                        builder: (context, child) {
-                          return CircularProgressIndicator(
-                            value: _animationController!.value,
-                            strokeWidth: 3,
-                            backgroundColor: Colors.grey[300],
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                                _getProgressColor()),
-                            semanticsLabel: 'Circular progress indicator',
-                            semanticsValue:
-                                '${(_animationController!.value * 100).toInt()}%',
-                          );
-                        },
-                      ),
-                    Text(
-                      '$_remainingSeconds',
-                      style: textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+              OTPCountdownTimer(
+                remainingSeconds: _remainingSeconds,
               ),
             ],
           ),

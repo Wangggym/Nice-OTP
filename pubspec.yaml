@@ -30,6 +30,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+
+  mpflutter_core: ^2.7.5
+  mpflutter_build_tools: ^2.7.5
+  mpflutter_wechat_api: ^2.2.3
+  # mpflutter_wechat_mapview: ^0.0.3
+  # es_compression: <= 2.0.12
+  
   screen_capturer: ^0.2.1
   image: ^4.1.7
   mobile_scanner: ^3.5.6
@@ -46,13 +53,14 @@ dependencies:
   flutter_localizations:
     sdk: flutter
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   watcher: ^1.1.0  # 替换 flutter_test_watcher
   mockito: ^5.4.0
   build_runner: ^2.4.0
-
+  rename_app: ^1.6.1
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -71,6 +79,15 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # fonts:
+  # - family: Roboto
+  #   fonts:
+  #     - asset: fonts/Roboto-Regular.ttf
+  #     - asset: fonts/Roboto-Bold.ttf
+  # - family: Noto Sans SC
+  #   fonts:
+  #     - asset: fonts/NotoSansSC-Regular.ttf
 
   # To add assets to your application, add an assets section, like this:
   # assets:

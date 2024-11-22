@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:two_factor_authentication/services/clipboard_service.dart';
 import '../models/otp_account.dart';
 import '../services/localization_service.dart';
 
@@ -33,7 +33,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
 
   void _copyToClipboard(String text) {
     final l10n = LocalizationService.of(context);
-    Clipboard.setData(ClipboardData(text: text));
+    ClipboardService.copyToClipboard(text);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(l10n.translate('copied'))),
     );
@@ -53,28 +53,29 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.translate('edit_account')),
-        actions: [
-          TextButton.icon(
-            icon: const Icon(Icons.save),
-            label: Text(l10n.translate('save')),
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                final updatedAccount = OTPAccount(
-                  name: _nameController.text,
-                  secret: widget.account.secret,
-                  issuer: _issuerController.text,
-                );
-                Navigator.pop(context, updatedAccount);
-              }
-            },
-          ),
-        ],
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                icon: const Icon(Icons.save),
+                label: Text(l10n.translate('save')),
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    final updatedAccount = OTPAccount(
+                      name: _nameController.text,
+                      secret: widget.account.secret,
+                      issuer: _issuerController.text,
+                    );
+                    Navigator.pop(context, updatedAccount);
+                  }
+                },
+              ),
+            ),
             // First Card - Editable Fields
             Card(
               child: Padding(
