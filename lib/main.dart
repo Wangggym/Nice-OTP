@@ -75,24 +75,20 @@ class MyAppDelegate {
   /// - MPFlutterWechatAppShareManager.onShareAppMessage 配合 MPFlutterWechatAppShareManager.setAppShareInfo 使用
   /// - 直接返回符合微信小程序要求的 Map
   Map onShareAppMessage(mpjs.JSObject detail) {
-    return MPFlutterWechatAppShareManager.onShareAppMessage(detail);
-    // final currentRoute = MPNavigatorObserver.currentRoute;
-    // if (currentRoute != null) {
-    //   final routeName = currentRoute.settings.name;
-    //   return {
-    //     "title": (() {
-    //       if (routeName == "/map_demo") {
-    //         return "Map Demo";
-    //       } else {
-    //         return "Awesome Project";
-    //       }
-    //     })(),
-    //     "path":
-    //         "pages/index/index?routeName=${routeName}", // 这个 query 会在 onLaunch 和 onEnter 中带回来。
-    //   };
-    // } else {
-    //   return {};
-    // }
+    final currentRoute = MPNavigatorObserver.currentRoute;
+    if (currentRoute != null) {
+      final routeName = currentRoute.settings.name;
+      return {
+        "title": "Nice OTP for all platforms",
+        "imageUrl": "icon.png",
+        "path": "pages/index/index?routeName=$routeName",
+      };
+    } else {
+      return {
+        "title": "Nice OTP for all platforms",
+        "imageUrl": "icon.png",
+      };
+    }
   }
 
   void onLaunchOrEnter(Map query) {
