@@ -7,7 +7,8 @@
     "coverage": "flutter test --coverage && genhtml coverage/lcov.info -o coverage/html && open coverage/html/index.html",
     "wechat": "dart scripts/build_wechat.dart",
     "wechat:dev": "dart scripts/build_wechat.dart --devmode",
-    "wechat:debug": "dart scripts/build_wechat.dart --debug"
+    "wechat:debug": "dart scripts/build_wechat.dart --debug",
+    "changeicon": "dart run flutter_launcher_icons"
   },
   "devDependencies": {
     "husky": "^9.0.11"
