@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/models/otp_account.dart';
+import 'package:two_factor_authentication/services/storage_service.dart';
 import '../services/localization_service.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final VoidCallback onAddPressed;
+  final Function(OTPAccount) onAccountAdded;
 
   const EmptyStateWidget({
     super.key,
     required this.onAddPressed,
+    required this.onAccountAdded,
   });
 
   @override
@@ -32,6 +36,24 @@ class EmptyStateWidget extends StatelessWidget {
               onPressed: onAddPressed,
               icon: const Icon(Icons.add),
               label: Text(l10n.translate('add_account')),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () async {
+                onAccountAdded(
+                  StorageService.addRandomAccount(),
+                );
+              },
+              icon: const Icon(Icons.shuffle),
+              label: Text(l10n.translate('add_random_account')),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black87,
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
             ),
           ],
         ),

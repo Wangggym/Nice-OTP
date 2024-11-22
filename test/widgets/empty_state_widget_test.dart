@@ -25,6 +25,7 @@ void main() {
           home: Scaffold(
             body: EmptyStateWidget(
               onAddPressed: () => buttonPressed = true,
+              onAccountAdded: (account) {},
             ),
           ),
         ),
@@ -38,6 +39,22 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(buttonPressed, true);
+    });
+
+    testWidgets('EmptyStateWidget displays correctly',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: EmptyStateWidget(
+            onAddPressed: () {},
+            onAccountAdded: (account) {},
+          ),
+        ),
+      );
+
+      expect(find.text('no_accounts'), findsOneWidget);
+      expect(find.text('add_account'), findsOneWidget);
+      expect(find.byIcon(Icons.add), findsOneWidget);
     });
   });
 }

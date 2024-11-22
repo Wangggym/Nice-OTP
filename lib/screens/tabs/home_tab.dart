@@ -9,6 +9,7 @@ class HomeTab extends StatelessWidget {
   final Function(OTPAccount) onDelete;
   final Function(OTPAccount) onEdit;
   final Function(OTPAccount) onPin;
+  final Function(OTPAccount) onAccountAdded;
   final VoidCallback onAddPressed;
 
   const HomeTab({
@@ -19,12 +20,14 @@ class HomeTab extends StatelessWidget {
     required this.onEdit,
     required this.onPin,
     required this.onAddPressed,
+    required this.onAccountAdded,
   });
 
   @override
   Widget build(BuildContext context) {
     return accounts.isEmpty
-        ? EmptyStateWidget(onAddPressed: onAddPressed)
+        ? EmptyStateWidget(
+            onAddPressed: onAddPressed, onAccountAdded: onAccountAdded)
         : ListView.builder(
             itemCount: accounts.length,
             itemBuilder: (context, index) {
