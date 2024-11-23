@@ -4,10 +4,18 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 
 class OTPService {
+  static int getNow() {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return now;
+  }
+
+  static int getRemainingSeconds({int timeStep = 30, required int now}) {
+    return timeStep - (now % timeStep);
+  }
+
   static OTPData generateOTP(String secret,
-      {int timeStep = 30, int digits = 6}) {
+      {int timeStep = 30, int digits = 6, required int now}) {
     try {
-      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       final step = now ~/ timeStep;
       final hmac = Hmac(sha1, Base32.decode(secret));
       final hmacResult = hmac.convert(intToBytes(step));
@@ -17,16 +25,14 @@ class OTPService {
               .getUint32(0, Endian.big) &
           0x7fffffff;
       final otp = binary % pow(10, digits).toInt();
-      final remainingSeconds = timeStep - (now % timeStep);
       return OTPData(
         otp: otp.toString().padLeft(digits, '0'),
-        remainingSeconds: remainingSeconds,
       );
     } catch (e) {
       if (kDebugMode) {
         print('Failed to generate OTP: $e');
       }
-      return OTPData(otp: '000000', remainingSeconds: 30);
+      return OTPData(otp: '000000');
     }
   }
 
@@ -49,9 +55,8 @@ class OTPService {
 
 class OTPData {
   final String otp;
-  final int remainingSeconds;
 
-  OTPData({required this.otp, required this.remainingSeconds});
+  OTPData({required this.otp});
 }
 
 class Base32 {

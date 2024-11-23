@@ -1,6 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/screens/tabs/home_tab.dart';
 import 'package:two_factor_authentication/services/localization_service.dart';
 import '../models/otp_account.dart';
 import '../services/otp_service.dart';
@@ -33,39 +32,20 @@ class OTPCard extends StatefulWidget {
 
 class _OTPCardState extends State<OTPCard> {
   late String _otp;
-  late Timer _timer;
-  late int _remainingSeconds;
   final GlobalKey<CopyAnimatedTextState> _copyTextKey = GlobalKey();
-
   @override
   void initState() {
     super.initState();
     _updateOTP();
-    _startTimer();
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _remainingSeconds--;
-        if (_remainingSeconds <= 0) {
-          _updateOTP();
-        }
-      });
-    });
   }
 
   void _updateOTP() {
-    final otpData = OTPService.generateOTP(widget.account.secret);
+    final otpData = OTPService.generateOTP(
+      widget.account.secret,
+      now: OTPService.getNow(),
+    );
     setState(() {
       _otp = _formatOTP(otpData.otp);
-      _remainingSeconds = otpData.remainingSeconds;
     });
   }
 
@@ -123,59 +103,74 @@ class _OTPCardState extends State<OTPCard> {
     );
   }
 
+  void _handleRemainingSecondsChange(int remainingSeconds) {
+    if (remainingSeconds <= 1) {
+      _updateOTP();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     const iconSize = 28.0;
 
-    return PressAnimationWidget(
-      onTap: _copyOTPToClipboard,
-      onLongPressStart: (details) => _showOptionsMenu(context, details),
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              if (widget.isPinned)
-                const Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: Icon(Icons.push_pin, size: 16, color: Colors.amber),
-                ),
-              ServiceIcon(
-                issuer: widget.account.issuer,
-                size: iconSize,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CopyAnimatedText(
-                      key: _copyTextKey,
-                      text: _otp,
-                      onCopy: () {},
+    return RemainingSecondsConsumer(
+      builder: (context, RemainingSecondsProvider provider) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _handleRemainingSecondsChange(provider.remainingSeconds);
+        });
+
+        return PressAnimationWidget(
+          onTap: _copyOTPToClipboard,
+          onLongPressStart: (details) => _showOptionsMenu(context, details),
+          child: Card(
+            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (widget.isPinned)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 8),
+                      child:
+                          Icon(Icons.push_pin, size: 16, color: Colors.amber),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${widget.account.issuer}: ${widget.account.name}',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                  ServiceIcon(
+                    issuer: widget.account.issuer,
+                    size: iconSize,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CopyAnimatedText(
+                          key: _copyTextKey,
+                          text: _otp,
+                          onCopy: () {},
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${widget.account.issuer}: ${widget.account.name}',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 12),
+                  OTPCountdownTimer(
+                    remainingSeconds: provider.remainingSeconds,
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              OTPCountdownTimer(
-                remainingSeconds: _remainingSeconds,
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -1,7 +1,7 @@
 {
   "app_name": "Nice OTP",
   "more_options": "更多选项",
-  "add_random_account": "来个示例账户试试吧",
+  "add_random_account": "来个示例",
   "language": "语言",
   "about": "关于",
   "add_account": "添加账户",
@@ -38,7 +38,7 @@
   "scan_qr_code_desktop": "捕获屏幕二维码",
   "scan_qr_position_hint": "将二维码放置在屏幕上，然后点击上方按钮进行扫描。",
   "failed_capture_qr": "捕获或解码二维码失败：{error}",
-  "no_accounts": "欢迎使用！点击下方按钮添加您的第一个验证器账户吧 ✨",
+  "no_accounts": "欢迎使用！点击下方按钮添加您的第一个验证器吧 ✨",
   "version": "版本 {version}",
   "created_by": "开发者：{author}",
   "disclaimer": "感谢使用Auth2！为了您的账户安全，请妥善保管密钥信息。",

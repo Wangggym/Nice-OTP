@@ -44,16 +44,8 @@ class EmptyStateWidget extends StatelessWidget {
                   StorageService.addRandomAccount(),
                 );
               },
-              icon: const Icon(Icons.shuffle),
+              icon: const Icon(Icons.auto_awesome),
               label: Text(l10n.translate('add_random_account')),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber,
-                foregroundColor: Colors.black87,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
             ),
           ],
         ),

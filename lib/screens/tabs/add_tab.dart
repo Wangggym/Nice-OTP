@@ -286,13 +286,14 @@ class _AddAccountFormState extends State<AddAccountForm> {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.add),
                   onPressed: () async {
                     if (await _checkAccountLimit()) {
                       _handleSubmit();
                     }
                   },
-                  child: Text(l10n.translate('add_account')),
+                  label: Text(l10n.translate('add_account')),
                 ),
               ),
             ],
