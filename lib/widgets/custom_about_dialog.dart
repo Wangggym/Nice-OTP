@@ -1,3 +1,4 @@
+import 'package:dartx/dartx.dart';
 import 'package:flutter/material.dart';
 import 'package:mpflutter_core/mpflutter_core.dart';
 import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
@@ -13,7 +14,10 @@ class CustomAboutDialog extends StatelessWidget {
 
     String version = "1.0.0";
     if (kIsMPFlutterWechat) {
-      version = AppBaseInfo().version;
+      // cannot get the correct version in the app base info
+      version = AppBaseInfo().version.isNotNullOrEmpty
+          ? AppBaseInfo().version
+          : "1.0.0";
     }
 
     return Dialog(
