@@ -1,19 +1,21 @@
+import "package:dartx/dartx.dart";
+
 class OTPAccount {
   final String name;
   final String secret;
-  final String issuer;
+  final String? issuer;
 
   OTPAccount({
     required this.name,
     required this.secret,
-    required this.issuer,
+    this.issuer,
   });
 
   factory OTPAccount.fromJson(Map<String, dynamic> json) {
     return OTPAccount(
       name: json['name'] as String,
       secret: json['secret'] as String,
-      issuer: json['issuer'] as String,
+      issuer: json['issuer'] as String?,
     );
   }
 
@@ -21,7 +23,7 @@ class OTPAccount {
     return {
       'name': name,
       'secret': secret,
-      'issuer': issuer,
+      if (issuer != null) 'issuer': issuer,
     };
   }
 
@@ -36,7 +38,7 @@ class OTPAccount {
     }
 
     String name;
-    String issuer;
+    String? issuer;
 
     final path =
         Uri.decodeComponent(uri.path.substring(1)); // Remove leading '/'
@@ -63,7 +65,7 @@ class OTPAccount {
   }
 
   @override
-  String toString() => '$issuer: $name';
+  String toString() => issuer.isNotNullOrEmpty ? '$issuer: $name' : name;
 
   @override
   bool operator ==(Object other) {

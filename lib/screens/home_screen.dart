@@ -4,7 +4,7 @@ import '../models/otp_account.dart';
 import '../services/localization_service.dart';
 import '../services/storage_service.dart';
 import 'edit_account_screen.dart';
-import 'tabs/home_tab.dart';
+import 'tabs/home_tab.dart' deferred as home_tab;
 import 'tabs/add_tab.dart' deferred as add_tab;
 import 'tabs/profile_tab.dart' deferred as profile_tab;
 
@@ -24,11 +24,17 @@ class _HomeScreenState extends State<HomeScreen> {
   List<OTPAccount> _accounts = [];
   List<String> _pinnedAccountNames = [];
   int _selectedIndex = 0;
+  Future<void>? _homeTabFuture;
+  Future<void>? _addTabFuture;
+  Future<void>? _profileTabFuture;
 
   @override
   void initState() {
     super.initState();
     _loadAccounts();
+    _homeTabFuture = home_tab.loadLibrary();
+    _addTabFuture = add_tab.loadLibrary();
+    _profileTabFuture = profile_tab.loadLibrary();
   }
 
   Future<void> _loadAccounts() async {
@@ -127,17 +133,26 @@ class _HomeScreenState extends State<HomeScreen> {
     _saveAccounts();
   }
 
+  void _onAccountAdded(OTPAccount account) {
+    setState(() {
+      _accounts.add(account);
+      _sortAccounts();
+      _selectedIndex = 0;
+    });
+    _saveAccounts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = LocalizationService.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Align(
+        title: const Align(
           alignment: Alignment.centerLeft,
           child: Text(
-            l10n.translate('app_name'),
-            style: const TextStyle(
+            'Nice OTP',
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               fontFamily: 'Montserrat',
@@ -148,32 +163,36 @@ class _HomeScreenState extends State<HomeScreen> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          HomeTab(
-            accounts: _accounts,
-            pinnedAccountNames: _pinnedAccountNames,
-            onDelete: _deleteAccount,
-            onEdit: _editAccount,
-            onPin: _pinAccount,
-            onAddPressed: () =>
-                setState(() => _selectedIndex = 1), // Switch to Add tab
+          FutureBuilder(
+            future: _homeTabFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              return home_tab.HomeTab(
+                accounts: _accounts,
+                pinnedAccountNames: _pinnedAccountNames,
+                onAccountAdded: _onAccountAdded,
+                onDelete: _deleteAccount,
+                onEdit: _editAccount,
+                onPin: _pinAccount,
+                onAddPressed: () => setState(() => _selectedIndex = 1),
+              );
+            },
           ),
           FutureBuilder(
-            future: add_tab.loadLibrary(),
+            future: _addTabFuture,
             builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
               return add_tab.AddTab(
-                onAccountAdded: (account) {
-                  setState(() {
-                    _accounts.add(account);
-                    _sortAccounts();
-                    _selectedIndex = 0; // Switch back to Home tab
-                  });
-                  _saveAccounts();
-                },
+                onAccountAdded: _onAccountAdded,
                 onAccountDeleteAll: () {
                   setState(() {
                     _accounts = [];
                     _pinnedAccountNames = [];
-                    _selectedIndex = 0; // Switch back to Home tab
+                    _selectedIndex = 0;
                   });
                   _saveAccounts();
                 },
@@ -181,8 +200,11 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
           FutureBuilder(
-            future: profile_tab.loadLibrary(),
+            future: _profileTabFuture,
             builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(child: CircularProgressIndicator());
+              }
               return profile_tab.ProfileTab(
                 onLocaleChanged: widget.onLocaleChanged,
                 currentLocale: Localizations.localeOf(context),

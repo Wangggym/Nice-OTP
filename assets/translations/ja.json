@@ -1,7 +1,7 @@
 {
   "app_name": "Nice OTP",
   "more_options": "その他のオプション",
-  "add_random_account": "ランダムアカウントを追加",
+  "add_random_account": "サンプルを試す",
   "language": "言語",
   "about": "アプリについて",
   "add_account": "アカウントを追加",
@@ -56,8 +56,8 @@
   "clear_all_accounts_confirm": "すべてのアカウントを削除してもよろしいですか？この操作は取り消せません。",
   "clear": "削除",
   "cancel": "キャンセル",
-  "accounts_cleared": "すべてのアカウントを削除しました",
+  "accounts_cleared": "すべてのアカウントが削除されました",
   "delete_account": "アカウントを削除",
   "delete_account_confirm": "このアカウントを削除してもよろしいですか？",
-  "account_deleted": "アカウントを削除しました"
+  "account_deleted": "アカウントが削除されました"
 } 

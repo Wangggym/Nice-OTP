@@ -1,13 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mpflutter_core/mpflutter_core.dart';
 import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
 import '../../models/otp_account.dart';
 import '../../services/localization_service.dart';
-import '../../services/otp_service.dart';
 import '../../widgets/qr_scanner.dart';
-import 'dart:math';
 import '../../services/storage_service.dart';
 
 class AddTab extends StatelessWidget {
@@ -94,8 +93,9 @@ class _AddAccountFormState extends State<AddAccountForm> {
           final account = OTPAccount.fromUri(Uri.parse(qrCode));
           _nameController.text = account.name;
           _secretController.text = account.secret;
-          _issuerController.text = account.issuer;
+          _issuerController.text = account.issuer ?? '';
         });
+        _handleSubmit();
       }
     } catch (e) {
       if (!mounted) return;
@@ -115,6 +115,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
         try {
           final account = OTPAccount.fromUri(Uri.parse(_urlController.text));
           widget.onAccountAdded(account);
+          _clearInputs();
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -130,8 +131,18 @@ class _AddAccountFormState extends State<AddAccountForm> {
             issuer: _issuerController.text,
           ),
         );
+        _clearInputs();
       }
     }
+  }
+
+  void _clearInputs() {
+    setState(() {
+      _urlController.clear();
+      _nameController.clear();
+      _secretController.clear();
+      _issuerController.clear();
+    });
   }
 
   Future<bool> _checkAccountLimit() async {
@@ -150,23 +161,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
   }
 
   void _addRandomAccount() {
-    final random = Random();
-    final randomIssuers = [
-      'Google',
-      'GitHub',
-      'Facebook',
-      'Twitter',
-      'Amazon',
-      'Microsoft',
-      'Apple'
-    ];
-    final randomIssuer = randomIssuers[random.nextInt(randomIssuers.length)];
-
-    final account = OTPAccount(
-      name: "Account ${DateTime.now().millisecondsSinceEpoch}",
-      secret: OTPService.generateRandomSecret(),
-      issuer: randomIssuer,
-    );
+    OTPAccount account = StorageService.addRandomAccount();
 
     widget.onAccountAdded(account);
   }
@@ -222,7 +217,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     setState(() {
                       _nameController.text = account.name;
                       _secretController.text = account.secret;
-                      _issuerController.text = account.issuer;
+                      _issuerController.text = account.issuer ?? '';
                     });
                   } catch (e) {
                     // Invalid URL format, ignore
@@ -267,12 +262,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     labelText: l10n.translate('issuer'),
                     hintText: l10n.translate('enter_issuer'),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return l10n.translate('please_enter_issuer');
-                    }
-                    return null;
-                  },
                 ),
               ],
             ),
@@ -292,78 +281,81 @@ class _AddAccountFormState extends State<AddAccountForm> {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.add),
                   onPressed: () async {
                     if (await _checkAccountLimit()) {
                       _handleSubmit();
                     }
                   },
-                  child: Text(l10n.translate('add_account')),
+                  label: Text(l10n.translate('add_account')),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    if (await _checkAccountLimit()) {
-                      _addRandomAccount();
-                    }
-                  },
-                  icon: const Icon(Icons.shuffle),
-                  label: Text(l10n.translate('add_random_account')),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    final l10n = LocalizationService.of(context);
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text(l10n.translate('clear_all_accounts')),
-                        content:
-                            Text(l10n.translate('clear_all_accounts_confirm')),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(l10n.translate('cancel')),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              widget.onAccountDeleteAll();
-                              Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content:
-                                      Text(l10n.translate('accounts_cleared')),
-                                ),
-                              );
-                            },
-                            child: Text(l10n.translate('clear')),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.delete_forever),
-                  label: Text(l10n.translate('clear_all_accounts')),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
+          if (kDebugMode)
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      if (await _checkAccountLimit()) {
+                        _addRandomAccount();
+                      }
+                    },
+                    icon: const Icon(Icons.shuffle),
+                    label: Text(l10n.translate('add_random_account')),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          if (kDebugMode) const SizedBox(height: 16),
+          if (kDebugMode)
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      final l10n = LocalizationService.of(context);
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(l10n.translate('clear_all_accounts')),
+                          content: Text(
+                              l10n.translate('clear_all_accounts_confirm')),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text(l10n.translate('cancel')),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                widget.onAccountDeleteAll();
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        l10n.translate('accounts_cleared')),
+                                  ),
+                                );
+                              },
+                              child: Text(l10n.translate('clear')),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.delete_forever),
+                    label: Text(l10n.translate('clear_all_accounts')),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
