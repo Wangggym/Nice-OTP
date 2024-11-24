@@ -33,7 +33,7 @@ dependencies:
 
   mpflutter_core: ^2.7.5
   mpflutter_build_tools: ^2.7.5
-  mpflutter_wechat_api: ^2.2.3
+  mpflutter_wechat_api: ^2.2.4
   dartx: ^1.2.0
   # mpflutter_wechat_mapview: ^0.0.3
   # es_compression: <= 2.0.12

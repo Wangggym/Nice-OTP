@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:two_factor_authentication/screens/language_screen.dart';
 import 'package:two_factor_authentication/widgets/custom_about_dialog.dart';
+import 'package:two_factor_authentication/widgets/wechat_login_button.dart';
 import '../../services/localization_service.dart';
 
 class ProfileTab extends StatelessWidget {
@@ -70,6 +71,19 @@ class ProfileTab extends StatelessWidget {
               context: context,
               builder: (context) => const CustomAboutDialog(),
             );
+          },
+        ),
+        WeChatLoginButton(
+          onLoginComplete: (success) {
+            if (success) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('登录成功')),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('登录失败')),
+              );
+            }
           },
         ),
       ],
