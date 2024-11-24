@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+/// source from: https://fontawesome.com/icons
 class ServiceIcon extends StatelessWidget {
   final String issuer;
   final double size;
