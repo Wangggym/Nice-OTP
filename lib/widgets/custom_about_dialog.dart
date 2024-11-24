@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:mpflutter_core/mpflutter_core.dart';
+import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
 import '../services/localization_service.dart';
 
 class CustomAboutDialog extends StatelessWidget {
@@ -8,6 +10,11 @@ class CustomAboutDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = LocalizationService.of(context);
     final textTheme = Theme.of(context).textTheme;
+
+    String version = "1.0.0";
+    if (kIsMPFlutterWechat) {
+      version = AppBaseInfo().version;
+    }
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -27,7 +34,7 @@ class CustomAboutDialog extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                l10n.translate('version', args: {'version': '1.0.0'}),
+                l10n.translate('version', args: {'version': version}),
                 style: textTheme.bodyLarge,
               ),
               const SizedBox(height: 8),
@@ -40,7 +47,7 @@ class CustomAboutDialog extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                '© 2024 Nice OTP',
+                '© ${DateTime.now().year} Nice OTP',
                 style: textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                 ),

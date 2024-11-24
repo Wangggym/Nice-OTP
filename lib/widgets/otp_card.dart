@@ -105,7 +105,9 @@ class _OTPCardState extends State<OTPCard> {
 
   void _handleRemainingSecondsChange(int remainingSeconds) {
     if (remainingSeconds <= 1) {
-      _updateOTP();
+      Future.delayed(const Duration(seconds: 1), () {
+        _updateOTP();
+      });
     }
   }
 
@@ -137,7 +139,7 @@ class _OTPCardState extends State<OTPCard> {
                           Icon(Icons.push_pin, size: 16, color: Colors.amber),
                     ),
                   ServiceIcon(
-                    issuer: widget.account.issuer,
+                    issuer: widget.account.issuer ?? '',
                     size: iconSize,
                   ),
                   const SizedBox(width: 12),
@@ -152,7 +154,7 @@ class _OTPCardState extends State<OTPCard> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${widget.account.issuer}: ${widget.account.name}',
+                          widget.account.toString(),
                           style: textTheme.bodySmall?.copyWith(
                             color: Colors.grey[600],
                           ),

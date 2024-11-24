@@ -93,8 +93,9 @@ class _AddAccountFormState extends State<AddAccountForm> {
           final account = OTPAccount.fromUri(Uri.parse(qrCode));
           _nameController.text = account.name;
           _secretController.text = account.secret;
-          _issuerController.text = account.issuer;
+          _issuerController.text = account.issuer ?? '';
         });
+        _handleSubmit();
       }
     } catch (e) {
       if (!mounted) return;
@@ -216,7 +217,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     setState(() {
                       _nameController.text = account.name;
                       _secretController.text = account.secret;
-                      _issuerController.text = account.issuer;
+                      _issuerController.text = account.issuer ?? '';
                     });
                   } catch (e) {
                     // Invalid URL format, ignore
@@ -261,12 +262,6 @@ class _AddAccountFormState extends State<AddAccountForm> {
                     labelText: l10n.translate('issuer'),
                     hintText: l10n.translate('enter_issuer'),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return l10n.translate('please_enter_issuer');
-                    }
-                    return null;
-                  },
                 ),
               ],
             ),
