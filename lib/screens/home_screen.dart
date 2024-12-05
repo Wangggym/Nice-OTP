@@ -27,6 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void>? _homeTabFuture;
   Future<void>? _addTabFuture;
   Future<void>? _profileTabFuture;
+  final StorageService _storageService = StorageService();
 
   @override
   void initState() {
@@ -38,11 +39,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadAccounts() async {
-    final accounts = await StorageService.loadAccounts();
-    final pinnedAccountNames = await StorageService.loadPinnedAccounts();
+    final accounts = await _storageService.loadAccounts();
+    final pinnedNames = await _storageService.loadPinnedAccounts();
     setState(() {
       _accounts = accounts;
-      _pinnedAccountNames = pinnedAccountNames;
+      _pinnedAccountNames = pinnedNames;
       _sortAccounts();
     });
   }
@@ -58,8 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _saveAccounts() async {
-    await StorageService.saveAccounts(_accounts);
-    await StorageService.savePinnedAccounts(_pinnedAccountNames);
+    await _storageService.saveAccounts(_accounts);
+    await _storageService.savePinnedAccounts(_pinnedAccountNames);
   }
 
   void _deleteAccount(OTPAccount account) {
@@ -216,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) async {
-          if (index == 1 && !(await StorageService.canAddMoreAccounts())) {
+          if (index == 1 && !(await _storageService.canAddMoreAccounts())) {
             // ignore: use_build_context_synchronously
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

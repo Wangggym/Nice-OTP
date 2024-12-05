@@ -31,6 +31,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  dio: ^5.4.1
+  json_annotation: ^4.8.1
+
   mpflutter_core: ^2.7.5
   mpflutter_build_tools: ^2.7.5
   mpflutter_wechat_api: ^2.2.4
@@ -60,6 +63,7 @@ dev_dependencies:
     sdk: flutter
   watcher: ^1.1.0  # 替换 flutter_test_watcher
   mockito: ^5.4.0
+  json_serializable: ^6.7.1
   build_runner: ^2.4.0
   rename_app: ^1.6.1
   # The "flutter_lints" package below contains a set of recommended lints to

@@ -1,25 +1,27 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:two_factor_authentication/services/otp_service.dart';
+
 import '../models/otp_account.dart';
+import 'storage_manager.dart';
 
 class StorageService {
-  static const String _key = 'otp_accounts';
-  static const String _pinnedKey = 'pinned_accounts';
   static const int maxAccounts = 15;
+  final StorageManager _storage = StorageManager();
 
-  static Future<void> saveAccounts(List<OTPAccount> accounts) async {
-    final prefs = await SharedPreferences.getInstance();
+  static final StorageService _instance = StorageService._internal();
+  factory StorageService() => _instance;
+  StorageService._internal();
+
+  Future<void> saveAccounts(List<OTPAccount> accounts) async {
     final String encodedData = json.encode(
       accounts.map((account) => account.toJson()).toList(),
     );
-    await prefs.setString(_key, encodedData);
+    await _storage.setAccounts(encodedData);
   }
 
-  static Future<List<OTPAccount>> loadAccounts() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? encodedData = prefs.getString(_key);
+  Future<List<OTPAccount>> loadAccounts() async {
+    final String? encodedData = await _storage.getAccounts();
     if (encodedData == null) {
       return [];
     }
@@ -27,22 +29,19 @@ class StorageService {
     return decodedData.map((item) => OTPAccount.fromJson(item)).toList();
   }
 
-  static Future<void> savePinnedAccounts(
-      List<String> pinnedAccountNames) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_pinnedKey, pinnedAccountNames);
+  Future<void> savePinnedAccounts(List<String> pinnedAccountNames) async {
+    await _storage.setPinnedAccounts(pinnedAccountNames);
   }
 
-  static Future<List<String>> loadPinnedAccounts() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_pinnedKey) ?? [];
+  Future<List<String>> loadPinnedAccounts() async {
+    return await _storage.getPinnedAccounts();
   }
 
-  static Future<bool> canAddMoreAccounts() async {
+  Future<bool> canAddMoreAccounts() async {
     return (await loadAccounts()).length < maxAccounts;
   }
 
-  static OTPAccount addRandomAccount() {
+  OTPAccount addRandomAccount() {
     final random = Random();
     final randomIssuers = [
       'Google',
@@ -55,11 +54,10 @@ class StorageService {
     ];
     final randomIssuer = randomIssuers[random.nextInt(randomIssuers.length)];
 
-    final account = OTPAccount(
+    return OTPAccount(
       name: "Account ${DateTime.now().millisecondsSinceEpoch}",
       secret: OTPService.generateRandomSecret(),
       issuer: randomIssuer,
     );
-    return account;
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/home_screen.dart';
 import 'services/language_service.dart';
 import 'services/localization_service.dart';
+import 'services/auth_manager.dart';
 
 import 'package:mpflutter_core/mpflutter_core.dart';
 import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
@@ -111,18 +112,39 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   Locale? _locale;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _loadLocale();
+    _initialize();
   }
 
-  Future<void> _loadLocale() async {
-    final locale = await LanguageService.getSelectedLocale();
-    setState(() {
-      _locale = locale;
-    });
+  Future<void> _initialize() async {
+    try {
+      // 加载语言设置
+      final locale = await LanguageService.getSelectedLocale();
+
+      // 进行身份验证
+      await AuthManager().authenticate();
+
+      if (mounted) {
+        setState(() {
+          _locale = locale;
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Initialization error: $e');
+      }
+      // 即使认证失败，也允许应用继续运行
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    }
   }
 
   void _handleLocaleChange(Locale newLocale) async {
@@ -134,7 +156,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    if (_locale == null) {
+    if (!_isInitialized) {
       return const MaterialApp(
         home: Scaffold(
           body: Center(

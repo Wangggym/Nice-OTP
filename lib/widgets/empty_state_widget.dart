@@ -16,6 +16,7 @@ class EmptyStateWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = LocalizationService.of(context);
+    final storageService = StorageService();
 
     return Center(
       child: Padding(
@@ -40,9 +41,9 @@ class EmptyStateWidget extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () async {
-                onAccountAdded(
-                  StorageService.addRandomAccount(),
-                );
+                if (await storageService.canAddMoreAccounts()) {
+                  onAccountAdded(storageService.addRandomAccount());
+                }
               },
               icon: const Icon(Icons.auto_awesome),
               label: Text(l10n.translate('add_random_account')),
