@@ -8,7 +8,8 @@
     "wechat": "dart scripts/build_wechat.dart",
     "wechat:dev": "dart scripts/build_wechat.dart --devmode",
     "wechat:debug": "dart scripts/build_wechat.dart --debug",
-    "changeicon": "dart run flutter_launcher_icons"
+    "changeicon": "dart run flutter_launcher_icons",
+    "makegen": "dart run build_runner build"
   },
   "devDependencies": {
     "husky": "^9.0.11"

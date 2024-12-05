@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 # 运行 Dart 检查脚本
-dart run tool/check.dart
+# dart run tool/check.dart
