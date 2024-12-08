@@ -4,7 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'screens/home_screen.dart';
 import 'services/language_service.dart';
 import 'services/localization_service.dart';
-import 'services/auth_manager.dart';
+import 'manager/auth_manager.dart';
 
 import 'package:mpflutter_core/mpflutter_core.dart';
 import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
@@ -59,8 +59,7 @@ class MyAppDelegate {
           print(launchptions['path']);
           print("应用冷启动时，会收到回调，应根据 query 决定是否要跳转页面。");
         }
-        await Future.delayed(
-            const Duration(seconds: 1)); // 加个延时，保障 navigator 已初始化。
+        await Future.delayed(const Duration(seconds: 1)); // 加个延时，保障 navigator 已初始化。
         onLaunchOrEnter(query);
       },
       onEnter: (query, launchptions) {

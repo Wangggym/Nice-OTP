@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 
 class StorageManager {
   static const String _tokenKey = 'auth_token';
   static const String _accountsKey = 'otp_accounts';
   static const String _pinnedKey = 'pinned_accounts';
+  static const String _lastSyncAtKey = 'last_sync_at';
 
   // 单例模式
   static final StorageManager _instance = StorageManager._internal();
@@ -36,15 +40,20 @@ class StorageManager {
     await _prefs.remove(_tokenKey);
   }
 
-  // OTP Accounts 相关方法
-  Future<String?> getAccounts() async {
+  Future<List<OTPToken>> getAccounts() async {
     await init();
-    return _prefs.getString(_accountsKey);
+    final String? encodedData = _prefs.getString(_accountsKey);
+    if (encodedData == null) {
+      return [];
+    }
+    final List<dynamic> decodedData = json.decode(encodedData);
+    return decodedData.map((item) => OTPToken.fromJson(item)).toList();
   }
 
-  Future<void> setAccounts(String accountsJson) async {
+  Future<void> setAccounts(List<OTPToken> accounts) async {
     await init();
-    await _prefs.setString(_accountsKey, accountsJson);
+    final String encodedData = json.encode(accounts.map((account) => account.toJson()).toList());
+    await _prefs.setString(_accountsKey, encodedData);
   }
 
   // Pinned Accounts 相关方法
@@ -56,6 +65,24 @@ class StorageManager {
   Future<void> setPinnedAccounts(List<String> pinnedAccounts) async {
     await init();
     await _prefs.setStringList(_pinnedKey, pinnedAccounts);
+  }
+
+  // User 相关方法
+  Future<DateTime?> getLastSyncAt() async {
+    await init();
+    final timestamp = _prefs.getInt(_lastSyncAtKey);
+    if (timestamp == null) return null;
+    return DateTime.fromMillisecondsSinceEpoch(timestamp);
+  }
+
+  Future<void> setLastSyncAt(DateTime lastSyncAt) async {
+    await init();
+    await _prefs.setInt(_lastSyncAtKey, lastSyncAt.millisecondsSinceEpoch);
+  }
+
+  Future<void> removeLastSyncAt() async {
+    await init();
+    await _prefs.remove(_lastSyncAtKey);
   }
 
   // 清除所有数据

@@ -13,7 +13,7 @@ class User {
   final bool syncEnabled;
 
   @JsonKey(name: 'last_sync_at')
-  final DateTime lastSyncAt;
+  final DateTime? lastSyncAt;
   @JsonKey(name: 'created_at')
   final DateTime createdAt;
   @JsonKey(name: 'updated_at')
@@ -24,11 +24,32 @@ class User {
     required this.email,
     required this.nickname,
     required this.syncEnabled,
-    required this.lastSyncAt,
+    this.lastSyncAt,
     required this.createdAt,
     required this.updatedAt,
   });
 
+  User copyWith({
+    String? id,
+    String? email,
+    String? nickname,
+    bool? syncEnabled,
+    DateTime? lastSyncAt,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      nickname: nickname ?? this.nickname,
+      syncEnabled: syncEnabled ?? this.syncEnabled,
+      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+
   Map<String, dynamic> toJson() => _$UserToJson(this);
 }

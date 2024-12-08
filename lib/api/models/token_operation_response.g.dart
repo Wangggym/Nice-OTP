@@ -14,6 +14,7 @@ TokenOperationResponse _$TokenOperationResponseFromJson(
           .map((e) => OTPToken.fromJson(e as Map<String, dynamic>))
           .toList(),
       syncTime: DateTime.parse(json['syncTime'] as String),
+      error: json['error'] as String? ?? '',
     );
 
 Map<String, dynamic> _$TokenOperationResponseToJson(
@@ -22,4 +23,5 @@ Map<String, dynamic> _$TokenOperationResponseToJson(
       'success': instance.success,
       'tokens': instance.tokens,
       'syncTime': instance.syncTime.toIso8601String(),
+      'error': instance.error,
     };

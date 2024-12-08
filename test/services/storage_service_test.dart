@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 import 'package:two_factor_authentication/services/storage_service.dart';
-import 'package:two_factor_authentication/models/otp_account.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -13,7 +13,7 @@ void main() {
 
     test('saveAccounts and loadAccounts work correctly', () async {
       final testAccounts = [
-        OTPAccount(
+        OTPToken(
           name: 'Test Account',
           issuer: 'Test Issuer',
           secret: 'TESTSECRET',

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../services/auth_manager.dart';
+import '../manager/auth_manager.dart';
 
 class DioClient {
   static final DioClient _instance = DioClient._internal();

@@ -9,15 +9,17 @@ class TokenOperationResponse {
   final List<OTPToken> tokens;
   @JsonKey(name: 'syncTime')
   final DateTime syncTime;
+  @JsonKey(name: 'error', defaultValue: "")
+  final String error;
 
   TokenOperationResponse({
     required this.success,
     required this.tokens,
     required this.syncTime,
+    required this.error,
   });
 
-  factory TokenOperationResponse.fromJson(Map<String, dynamic> json) =>
-      _$TokenOperationResponseFromJson(json);
+  factory TokenOperationResponse.fromJson(Map<String, dynamic> json) => _$TokenOperationResponseFromJson(json);
 
   Map<String, dynamic> toJson() => _$TokenOperationResponseToJson(this);
 }

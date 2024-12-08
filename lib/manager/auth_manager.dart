@@ -3,7 +3,7 @@ import 'package:two_factor_authentication/services/wechat_login_service.dart';
 
 import '../api/services/auth_service.dart';
 import 'storage_manager.dart';
-import '../stores/user_store.dart';
+import '../store/user_store.dart';
 
 class AuthManager {
   final AuthService _authService = AuthService();

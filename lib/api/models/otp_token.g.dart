@@ -7,10 +7,10 @@ part of 'otp_token.dart';
 // **************************************************************************
 
 OTPToken _$OTPTokenFromJson(Map<String, dynamic> json) => OTPToken(
-      id: json['id'] as String,
+      id: json['id'] as String? ?? '',
       name: json['name'] as String,
       secret: json['secret'] as String,
-      issuer: json['issuer'] as String,
+      issuer: json['issuer'] as String? ?? '',
       createdAt: json['created_at'] == null
           ? null
           : DateTime.parse(json['created_at'] as String),

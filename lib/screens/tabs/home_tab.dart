@@ -2,17 +2,17 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:two_factor_authentication/services/otp_service.dart';
-import '../../models/otp_account.dart';
+import '../../api/models/otp_token.dart';
 import '../../widgets/otp_card.dart';
 import '../../widgets/empty_state_widget.dart';
 
 class HomeTab extends StatelessWidget {
-  final List<OTPAccount> accounts;
+  final List<OTPToken> accounts;
   final List<String> pinnedAccountNames;
-  final Function(OTPAccount) onDelete;
-  final Function(OTPAccount) onEdit;
-  final Function(OTPAccount) onPin;
-  final Function(OTPAccount) onAccountAdded;
+  final Function(OTPToken) onDelete;
+  final Function(OTPToken) onEdit;
+  final Function(OTPToken) onPin;
+  final Function(OTPToken) onAccountAdded;
   final VoidCallback onAddPressed;
 
   const HomeTab({
@@ -29,8 +29,7 @@ class HomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return accounts.isEmpty
-        ? EmptyStateWidget(
-            onAddPressed: onAddPressed, onAccountAdded: onAccountAdded)
+        ? EmptyStateWidget(onAddPressed: onAddPressed, onAccountAdded: onAccountAdded)
         : RemainingSecondsContainer(
             child: ListView.builder(
               itemCount: accounts.length,
@@ -54,14 +53,12 @@ class RemainingSecondsContainer extends StatefulWidget {
   const RemainingSecondsContainer({super.key, required this.child});
 
   @override
-  State<RemainingSecondsContainer> createState() =>
-      _RemainingSecondsContainerState();
+  State<RemainingSecondsContainer> createState() => _RemainingSecondsContainerState();
 }
 
 class _RemainingSecondsContainerState extends State<RemainingSecondsContainer> {
   late Timer _timer;
-  late int _remainingSeconds =
-      OTPService.getRemainingSeconds(now: OTPService.getNow());
+  late int _remainingSeconds = OTPService.getRemainingSeconds(now: OTPService.getNow());
   late Function update = (int now) {};
 
   @override
@@ -90,10 +87,7 @@ class _RemainingSecondsContainerState extends State<RemainingSecondsContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return RemainingSecondsProvider(
-        remainingSeconds: _remainingSeconds,
-        update: update,
-        child: widget.child);
+    return RemainingSecondsProvider(remainingSeconds: _remainingSeconds, update: update, child: widget.child);
   }
 }
 
@@ -108,8 +102,7 @@ class RemainingSecondsProvider extends InheritedWidget {
   });
 
   static RemainingSecondsProvider of(BuildContext context) {
-    return context
-            .dependOnInheritedWidgetOfExactType<RemainingSecondsProvider>() ??
+    return context.dependOnInheritedWidgetOfExactType<RemainingSecondsProvider>() ??
         RemainingSecondsProvider(
           remainingSeconds: 30,
           update: (int now) {},
@@ -123,8 +116,7 @@ class RemainingSecondsProvider extends InheritedWidget {
   }
 }
 
-class RemainingSecondsConsumer<T extends RemainingSecondsProvider>
-    extends StatelessWidget {
+class RemainingSecondsConsumer<T extends RemainingSecondsProvider> extends StatelessWidget {
   const RemainingSecondsConsumer({
     super.key,
     required this.builder,

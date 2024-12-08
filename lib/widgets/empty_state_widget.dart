@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:two_factor_authentication/models/otp_account.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 import 'package:two_factor_authentication/services/storage_service.dart';
 import '../services/localization_service.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final VoidCallback onAddPressed;
-  final Function(OTPAccount) onAccountAdded;
+  final Function(OTPToken) onAccountAdded;
 
   const EmptyStateWidget({
     super.key,

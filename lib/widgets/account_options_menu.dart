@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../models/otp_account.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 import '../services/localization_service.dart';
 
 class AccountOptionsMenu extends StatelessWidget {
-  final OTPAccount account;
-  final Function(OTPAccount) onDelete;
-  final Function(OTPAccount) onEdit;
-  final Function(OTPAccount) onPin;
+  final OTPToken account;
+  final Function(OTPToken) onDelete;
+  final Function(OTPToken) onEdit;
+  final Function(OTPToken) onPin;
   final Function() onCopy;
   final bool isPinned;
   final RelativeRect position;
@@ -81,10 +81,10 @@ class AccountOptionsMenu extends StatelessWidget {
   static Future<T?> show<T>({
     required BuildContext context,
     required RelativeRect position,
-    required OTPAccount account,
-    required Function(OTPAccount) onDelete,
-    required Function(OTPAccount) onEdit,
-    required Function(OTPAccount) onPin,
+    required OTPToken account,
+    required Function(OTPToken) onDelete,
+    required Function(OTPToken) onEdit,
+    required Function(OTPToken) onPin,
     required Function() onCopy,
     required bool isPinned,
   }) {

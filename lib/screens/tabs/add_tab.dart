@@ -4,13 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mpflutter_core/mpflutter_core.dart';
 import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
-import '../../models/otp_account.dart';
+import '../../api/models/otp_token.dart';
 import '../../services/localization_service.dart';
 import '../../widgets/qr_scanner.dart';
 import '../../services/storage_service.dart';
 
 class AddTab extends StatefulWidget {
-  final Function(OTPAccount) onAccountAdded;
+  final Function(OTPToken) onAccountAdded;
   final Function() onAccountDeleteAll;
 
   const AddTab({
@@ -68,7 +68,7 @@ class _AddTabState extends State<AddTab> {
         setState(() {
           _isUrlMode = true;
           _urlController.text = qrCode;
-          final account = OTPAccount.fromUri(Uri.parse(qrCode));
+          final account = OTPToken.fromUri(Uri.parse(qrCode));
           _nameController.text = account.name;
           _secretController.text = account.secret;
           _issuerController.text = account.issuer ?? '';
@@ -91,7 +91,7 @@ class _AddTabState extends State<AddTab> {
     if (_formKey.currentState!.validate()) {
       if (_isUrlMode) {
         try {
-          final account = OTPAccount.fromUri(Uri.parse(_urlController.text));
+          final account = OTPToken.fromUri(Uri.parse(_urlController.text));
           widget.onAccountAdded(account);
           _clearInputs();
         } catch (e) {
@@ -103,7 +103,7 @@ class _AddTabState extends State<AddTab> {
         }
       } else {
         widget.onAccountAdded(
-          OTPAccount(
+          OTPToken(
             name: _nameController.text,
             secret: _secretController.text,
             issuer: _issuerController.text,
@@ -195,7 +195,7 @@ class _AddTabState extends State<AddTab> {
                   onChanged: (url) {
                     if (url.startsWith('otpauth://')) {
                       try {
-                        final account = OTPAccount.fromUri(Uri.parse(url));
+                        final account = OTPToken.fromUri(Uri.parse(url));
                         setState(() {
                           _nameController.text = account.name;
                           _secretController.text = account.secret;
@@ -302,8 +302,7 @@ class _AddTabState extends State<AddTab> {
                             context: context,
                             builder: (context) => AlertDialog(
                               title: Text(l10n.translate('clear_all_accounts')),
-                              content: Text(
-                                  l10n.translate('clear_all_accounts_confirm')),
+                              content: Text(l10n.translate('clear_all_accounts_confirm')),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
@@ -315,8 +314,7 @@ class _AddTabState extends State<AddTab> {
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text(
-                                            l10n.translate('accounts_cleared')),
+                                        content: Text(l10n.translate('accounts_cleared')),
                                       ),
                                     );
                                   },

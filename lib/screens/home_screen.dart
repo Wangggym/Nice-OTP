@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 
-import '../models/otp_account.dart';
 import '../services/localization_service.dart';
 import '../services/storage_service.dart';
+import '../manager/cloud_sync_manager.dart';
+import '../api/models/token_create_request.dart';
 import 'edit_account_screen.dart';
 import 'tabs/home_tab.dart' deferred as home_tab;
 import 'tabs/add_tab.dart' deferred as add_tab;
@@ -21,13 +23,14 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<OTPAccount> _accounts = [];
+  List<OTPToken> _accounts = [];
   List<String> _pinnedAccountNames = [];
   int _selectedIndex = 0;
   Future<void>? _homeTabFuture;
   Future<void>? _addTabFuture;
   Future<void>? _profileTabFuture;
   final StorageService _storageService = StorageService();
+  final CloudSyncManager _cloudSync = CloudSyncManager();
 
   @override
   void initState() {
@@ -41,6 +44,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadAccounts() async {
     final accounts = await _storageService.loadAccounts();
     final pinnedNames = await _storageService.loadPinnedAccounts();
+
+    try {
+      final serverTokens = await _cloudSync.getTokens();
+      print('成功从云端获取数据，待实现合并逻辑');
+    } catch (e) {
+      print('从云端同步数据失败: $e');
+    }
+
     setState(() {
       _accounts = accounts;
       _pinnedAccountNames = pinnedNames;
@@ -61,14 +72,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _saveAccounts() async {
     await _storageService.saveAccounts(_accounts);
     await _storageService.savePinnedAccounts(_pinnedAccountNames);
+
+    try {
+      print('准备同步到云端');
+    } catch (e) {
+      print('同步到云端失败: $e');
+    }
   }
 
-  void _deleteAccount(OTPAccount account) {
+  void _deleteAccount(OTPToken account) async {
     setState(() {
       _accounts.removeWhere((a) => a.name == account.name);
       _pinnedAccountNames.remove(account.name);
     });
-    _saveAccounts();
+
+    await _saveAccounts();
+
+    try {
+      print('准备从云端删除');
+    } catch (e) {
+      print('从云端删除失败: $e');
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -81,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _editAccount(OTPAccount account) async {
+  void _editAccount(OTPToken account) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -89,10 +114,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
 
-    if (result != null && result is OTPAccount) {
+    if (result != null && result is OTPToken) {
       setState(() {
-        final index = _accounts.indexWhere(
-            (a) => a.name == account.name && a.secret == account.secret);
+        final index = _accounts.indexWhere((a) => a.name == account.name && a.secret == account.secret);
         if (index != -1) {
           _accounts[index] = result;
           _sortAccounts();
@@ -102,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _pinAccount(OTPAccount account) {
+  void _pinAccount(OTPToken account) {
     setState(() {
       if (_pinnedAccountNames.contains(account.name)) {
         _pinnedAccountNames.remove(account.name);
@@ -134,13 +158,16 @@ class _HomeScreenState extends State<HomeScreen> {
     _saveAccounts();
   }
 
-  void _onAccountAdded(OTPAccount account) {
+  void _onAccountAdded(OTPToken account) async {
     setState(() {
       _accounts.add(account);
       _sortAccounts();
       _selectedIndex = 0;
     });
-    _saveAccounts();
+    await _saveAccounts();
+    await _cloudSync.createTokens([
+      OTPToken.fromJson(account.toJson()),
+    ]);
   }
 
   @override
