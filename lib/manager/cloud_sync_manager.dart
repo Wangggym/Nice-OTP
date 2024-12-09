@@ -49,15 +49,15 @@ class CloudSyncManager {
   }
 
   // Create tokens
-  Future<void> createTokens(List<OTPToken> newTokens) async {
+  Future<void> createToken(OTPToken newtoken) async {
     var copyTokens = _otpTokenStore.copyWith();
 
     // Save locally first
-    final allTokens = _otpTokenStore.addTokens(newTokens);
+    final allTokens = _otpTokenStore.addToken(newtoken);
     _storageManager.setAccounts(allTokens);
 
     try {
-      final response = await _otpTokenManager.createTokens(newTokens);
+      final response = await _otpTokenManager.createTokens([newtoken]);
       if (response.success) {
         var newTokens = [...copyTokens, ...response.tokens];
         _otpTokenStore.setTokens(newTokens);
@@ -105,6 +105,23 @@ class CloudSyncManager {
     }
   }
 
+  // Pin token
+  Future<void> pinToken(String id) async {
+    var updatedTokens = _otpTokenStore.pinToken(id);
+    _storageManager.setAccounts(updatedTokens);
+
+    try {
+      final response = await _otpTokenService.pinToken(id);
+      if (response.success) {
+        await syncLastSyncAt(response.syncTime);
+        return;
+      }
+      print('Failed to pin token: ${response.error}');
+    } catch (e) {
+      print('Failed to pin token: $e');
+    }
+  }
+
   // Get deleted tokens
   Future<List<OTPToken>> getDeletedTokens() async {
     try {
@@ -133,5 +150,11 @@ class CloudSyncManager {
       print('Failed to delete history: $e');
       rethrow;
     }
+  }
+
+  // Delete all tokens
+  Future<void> deleteAllTokens() async {
+    var updatedTokens = _otpTokenStore.removeAllTokens();
+    _storageManager.setAccounts(updatedTokens);
   }
 }

@@ -11,6 +11,9 @@ class OTPToken {
   final String secret;
   @JsonKey(name: 'issuer', defaultValue: "")
   final String? issuer;
+  @JsonKey(name: 'pinned_time', defaultValue: null)
+  DateTime? pinnedTime;
+
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
   @JsonKey(name: 'updated_at')
@@ -23,6 +26,7 @@ class OTPToken {
     required this.name,
     required this.secret,
     this.issuer,
+    this.pinnedTime,
     this.createdAt,
     this.updatedAt,
     this.deletedAt,
@@ -84,4 +88,6 @@ class OTPToken {
 
   @override
   int get hashCode => Object.hash(name, secret, issuer);
+
+  bool get isPinned => pinnedTime != null;
 }

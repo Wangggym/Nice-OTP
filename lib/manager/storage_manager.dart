@@ -9,7 +9,6 @@ class StorageManager {
   static const String _pinnedKey = 'pinned_accounts';
   static const String _lastSyncAtKey = 'last_sync_at';
 
-  // 单例模式
   static final StorageManager _instance = StorageManager._internal();
   factory StorageManager() => _instance;
   StorageManager._internal();

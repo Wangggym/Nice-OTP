@@ -1,49 +1,78 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
+import 'package:two_factor_authentication/api/models/token_update_request.dart';
+import 'package:two_factor_authentication/manager/cloud_sync_manager.dart';
+import 'package:two_factor_authentication/screens/edit_account_screen.dart';
 import 'package:two_factor_authentication/services/otp_service.dart';
-import '../../api/models/otp_token.dart';
+import 'package:two_factor_authentication/store/otp_token_store.dart';
 import '../../widgets/otp_card.dart';
 import '../../widgets/empty_state_widget.dart';
 
 class HomeTab extends StatelessWidget {
-  final List<OTPToken> accounts;
-  final List<String> pinnedAccountNames;
-  final Function(OTPToken) onDelete;
-  final Function(OTPToken) onEdit;
-  final Function(OTPToken) onPin;
-  final Function(OTPToken) onAccountAdded;
   final VoidCallback onAddPressed;
 
   const HomeTab({
     super.key,
-    required this.accounts,
-    required this.pinnedAccountNames,
-    required this.onDelete,
-    required this.onEdit,
-    required this.onPin,
     required this.onAddPressed,
-    required this.onAccountAdded,
   });
 
   @override
   Widget build(BuildContext context) {
-    return accounts.isEmpty
-        ? EmptyStateWidget(onAddPressed: onAddPressed, onAccountAdded: onAccountAdded)
-        : RemainingSecondsContainer(
-            child: ListView.builder(
-              itemCount: accounts.length,
-              itemBuilder: (context, index) {
-                return OTPCard(
-                  account: accounts[index],
-                  onDelete: onDelete,
-                  onEdit: onEdit,
-                  onPin: onPin,
-                  isPinned: pinnedAccountNames.contains(accounts[index].name),
-                );
-              },
-            ),
-          );
+    final CloudSyncManager cloudSync = CloudSyncManager();
+    final OTPTokenStore otpTokenStore = OTPTokenStore();
+
+    void editAccount(OTPToken account) async {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditAccountScreen(account: account),
+        ),
+      );
+
+      if (result != null && result is OTPToken) {
+        cloudSync.updateToken(TokenUpdateRequest(
+          id: result.id,
+          name: result.name,
+          issuer: result.issuer ?? '',
+        ));
+      }
+    }
+
+    return ValueListenableBuilder(
+      valueListenable: otpTokenStore.tokens,
+      builder: (context, accounts, child) {
+        final sortedAccounts = otpTokenStore.sortedTokens;
+
+        return sortedAccounts.isEmpty
+            ? EmptyStateWidget(
+                onAddPressed: onAddPressed,
+                onAccountAdded: () {
+                  var account = OTPService.addRandomAccount();
+                  cloudSync.createToken(account);
+                },
+                canAddMoreTokens: otpTokenStore.canAddMoreTokens,
+              )
+            : RemainingSecondsContainer(
+                child: ListView.builder(
+                  itemCount: sortedAccounts.length,
+                  itemBuilder: (context, index) {
+                    return OTPCard(
+                      account: sortedAccounts[index],
+                      onEdit: editAccount,
+                      onPin: (account) {
+                        cloudSync.pinToken(account.id);
+                      },
+                      onDelete: (account) {
+                        cloudSync.deleteToken(account.id);
+                      },
+                    );
+                  },
+                ),
+              );
+      },
+    );
   }
 }
 

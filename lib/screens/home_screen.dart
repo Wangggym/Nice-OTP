@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:two_factor_authentication/api/models/otp_token.dart';
+import 'package:two_factor_authentication/store/otp_token_store.dart';
 
 import '../services/localization_service.dart';
-import '../services/storage_service.dart';
 import '../manager/cloud_sync_manager.dart';
-import '../api/models/token_create_request.dart';
-import 'edit_account_screen.dart';
 import 'tabs/home_tab.dart' deferred as home_tab;
 import 'tabs/add_tab.dart' deferred as add_tab;
 import 'tabs/profile_tab.dart' deferred as profile_tab;
@@ -23,14 +20,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<OTPToken> _accounts = [];
-  List<String> _pinnedAccountNames = [];
   int _selectedIndex = 0;
   Future<void>? _homeTabFuture;
   Future<void>? _addTabFuture;
   Future<void>? _profileTabFuture;
-  final StorageService _storageService = StorageService();
   final CloudSyncManager _cloudSync = CloudSyncManager();
+  final OTPTokenStore _otpTokenStore = OTPTokenStore();
 
   @override
   void initState() {
@@ -42,132 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadAccounts() async {
-    final accounts = await _storageService.loadAccounts();
-    final pinnedNames = await _storageService.loadPinnedAccounts();
-
-    try {
-      final serverTokens = await _cloudSync.getTokens();
-      print('成功从云端获取数据，待实现合并逻辑');
-    } catch (e) {
-      print('从云端同步数据失败: $e');
-    }
-
-    setState(() {
-      _accounts = accounts;
-      _pinnedAccountNames = pinnedNames;
-      _sortAccounts();
-    });
-  }
-
-  void _sortAccounts() {
-    _accounts.sort((a, b) {
-      final isPinnedA = _pinnedAccountNames.contains(a.name);
-      final isPinnedB = _pinnedAccountNames.contains(b.name);
-      if (isPinnedA && !isPinnedB) return -1;
-      if (!isPinnedA && isPinnedB) return 1;
-      return a.name.compareTo(b.name);
-    });
-  }
-
-  Future<void> _saveAccounts() async {
-    await _storageService.saveAccounts(_accounts);
-    await _storageService.savePinnedAccounts(_pinnedAccountNames);
-
-    try {
-      print('准备同步到云端');
-    } catch (e) {
-      print('同步到云端失败: $e');
-    }
-  }
-
-  void _deleteAccount(OTPToken account) async {
-    setState(() {
-      _accounts.removeWhere((a) => a.name == account.name);
-      _pinnedAccountNames.remove(account.name);
-    });
-
-    await _saveAccounts();
-
-    try {
-      print('准备从云端删除');
-    } catch (e) {
-      print('从云端删除失败: $e');
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          LocalizationService.of(context).translate(
-            'has_been_deleted',
-            args: {'name': account.name},
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _editAccount(OTPToken account) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditAccountScreen(account: account),
-      ),
-    );
-
-    if (result != null && result is OTPToken) {
-      setState(() {
-        final index = _accounts.indexWhere((a) => a.name == account.name && a.secret == account.secret);
-        if (index != -1) {
-          _accounts[index] = result;
-          _sortAccounts();
-        }
-      });
-      _saveAccounts();
-    }
-  }
-
-  void _pinAccount(OTPToken account) {
-    setState(() {
-      if (_pinnedAccountNames.contains(account.name)) {
-        _pinnedAccountNames.remove(account.name);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              LocalizationService.of(context).translate(
-                'has_been_unpinned',
-                args: {'name': account.name},
-              ),
-            ),
-          ),
-        );
-      } else {
-        _pinnedAccountNames.add(account.name);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              LocalizationService.of(context).translate(
-                'has_been_pinned',
-                args: {'name': account.name},
-              ),
-            ),
-          ),
-        );
-      }
-      _sortAccounts();
-    });
-    _saveAccounts();
-  }
-
-  void _onAccountAdded(OTPToken account) async {
-    setState(() {
-      _accounts.add(account);
-      _sortAccounts();
-      _selectedIndex = 0;
-    });
-    await _saveAccounts();
-    await _cloudSync.createTokens([
-      OTPToken.fromJson(account.toJson()),
-    ]);
+    await _cloudSync.sync();
   }
 
   @override
@@ -198,12 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               return home_tab.HomeTab(
-                accounts: _accounts,
-                pinnedAccountNames: _pinnedAccountNames,
-                onAccountAdded: _onAccountAdded,
-                onDelete: _deleteAccount,
-                onEdit: _editAccount,
-                onPin: _pinAccount,
                 onAddPressed: () => setState(() => _selectedIndex = 1),
               );
             },
@@ -215,14 +79,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               return add_tab.AddTab(
-                onAccountAdded: _onAccountAdded,
-                onAccountDeleteAll: () {
+                onAccountAdded: (account) {
+                  _cloudSync.createToken(account);
                   setState(() {
-                    _accounts = [];
-                    _pinnedAccountNames = [];
                     _selectedIndex = 0;
                   });
-                  _saveAccounts();
+                },
+                onAccountDeleteAll: () {
+                  _cloudSync.deleteAllTokens();
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
                 },
               );
             },
@@ -244,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) async {
-          if (index == 1 && !(await _storageService.canAddMoreAccounts())) {
+          if (index == 1 && _otpTokenStore.canAddMoreTokens == false) {
             // ignore: use_build_context_synchronously
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

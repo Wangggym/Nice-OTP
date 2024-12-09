@@ -70,6 +70,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                       name: _nameController.text,
                       secret: widget.account.secret,
                       issuer: _issuerController.text,
+                      id: widget.account.id,
                     );
                     Navigator.pop(context, updatedAccount);
                   }

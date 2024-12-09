@@ -15,7 +15,6 @@ class OTPCard extends StatefulWidget {
   final Function(OTPToken) onDelete;
   final Function(OTPToken) onEdit;
   final Function(OTPToken) onPin;
-  final bool isPinned;
 
   const OTPCard({
     super.key,
@@ -23,7 +22,6 @@ class OTPCard extends StatefulWidget {
     required this.onDelete,
     required this.onEdit,
     required this.onPin,
-    required this.isPinned,
   });
 
   @override
@@ -98,7 +96,7 @@ class _OTPCardState extends State<OTPCard> {
       onEdit: widget.onEdit,
       onPin: widget.onPin,
       onCopy: _copyOTPToClipboard,
-      isPinned: widget.isPinned,
+      isPinned: widget.account.isPinned,
     );
   }
 
@@ -131,7 +129,7 @@ class _OTPCardState extends State<OTPCard> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (widget.isPinned)
+                  if (widget.account.isPinned)
                     const Padding(
                       padding: EdgeInsets.only(right: 8),
                       child: Icon(Icons.push_pin, size: 16, color: Colors.amber),

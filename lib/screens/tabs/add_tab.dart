@@ -4,10 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mpflutter_core/mpflutter_core.dart';
 import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
+import 'package:two_factor_authentication/services/otp_service.dart';
+import 'package:two_factor_authentication/store/otp_token_store.dart';
 import '../../api/models/otp_token.dart';
 import '../../services/localization_service.dart';
 import '../../widgets/qr_scanner.dart';
-import '../../services/storage_service.dart';
 
 class AddTab extends StatefulWidget {
   final Function(OTPToken) onAccountAdded;
@@ -30,7 +31,7 @@ class _AddTabState extends State<AddTab> {
   final _issuerController = TextEditingController();
   final _urlController = TextEditingController();
   bool _isUrlMode = true;
-  final StorageService _storageService = StorageService();
+  final OTPTokenStore _otpTokenStore = OTPTokenStore();
 
   @override
   void dispose() {
@@ -126,7 +127,7 @@ class _AddTabState extends State<AddTab> {
   Future<bool> _checkAccountLimit() async {
     final l10n = LocalizationService.of(context);
 
-    if (!(await _storageService.canAddMoreAccounts())) {
+    if (_otpTokenStore.canAddMoreTokens == false) {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -139,8 +140,8 @@ class _AddTabState extends State<AddTab> {
   }
 
   Future<void> _addRandomAccount() async {
-    if (await _storageService.canAddMoreAccounts()) {
-      final account = _storageService.addRandomAccount();
+    if (_otpTokenStore.canAddMoreTokens == true) {
+      final account = OTPService.addRandomAccount();
       widget.onAccountAdded(account);
     }
   }

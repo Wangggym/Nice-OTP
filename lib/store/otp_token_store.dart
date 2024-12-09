@@ -3,6 +3,7 @@ import 'package:two_factor_authentication/api/models/otp_token.dart';
 import 'package:two_factor_authentication/api/models/token_update_request.dart';
 
 class OTPTokenStore {
+  static const int maxAccounts = 15;
   // 单例模式
   static final OTPTokenStore _instance = OTPTokenStore._internal();
   factory OTPTokenStore() => _instance;
@@ -14,15 +15,26 @@ class OTPTokenStore {
   // 获取所有 tokens
   List<OTPToken> get allTokens => tokens.value;
 
+  // 获取排序后的 tokens
+  // 先排pinned 时间，再按创建时间排序
+  List<OTPToken> get sortedTokens {
+    final pinnedTokens = tokens.value.where((token) => token.pinnedTime != null).toList()
+      ..sort((a, b) => b.pinnedTime!.compareTo(a.pinnedTime!));
+    final unpinnedTokens = tokens.value.where((token) => token.pinnedTime == null).toList()
+      ..sort((a, b) => a.createdAt?.compareTo(b.createdAt ?? DateTime(0)) ?? 0);
+    return pinnedTokens..addAll(unpinnedTokens);
+  }
+
   // 更新 tokens 列表
   void setTokens(List<OTPToken> newTokens) {
     tokens.value = newTokens;
   }
 
   // 添加单个 token
-  void addToken(OTPToken token) {
+  List<OTPToken> addToken(OTPToken token) {
     final updatedTokens = List<OTPToken>.from(tokens.value)..add(token);
     tokens.value = updatedTokens;
+    return updatedTokens;
   }
 
   // 添加多个 tokens
@@ -60,6 +72,26 @@ class OTPTokenStore {
     return tokens.value;
   }
 
+  // 删除所有 tokens
+  List<OTPToken> removeAllTokens() {
+    final List<OTPToken> updatedTokens = [];
+    tokens.value = updatedTokens;
+    return updatedTokens;
+  }
+
+  // pin token
+  List<OTPToken> pinToken(String id) {
+    final updatedTokens = List<OTPToken>.from(tokens.value);
+    final token = updatedTokens.firstWhere((token) => token.id == id);
+    if (token.pinnedTime != null) {
+      token.pinnedTime = null;
+    } else {
+      token.pinnedTime = DateTime.now();
+    }
+    tokens.value = updatedTokens;
+    return updatedTokens;
+  }
+
   // 清空所有 tokens
   void clearTokens() {
     tokens.value = [];
@@ -86,4 +118,7 @@ class OTPTokenStore {
   }) {
     return tokens ?? List<OTPToken>.from(this.tokens.value);
   }
+
+  // 是否可以添加更多 tokens
+  bool get canAddMoreTokens => tokens.value.length < maxAccounts;
 }
