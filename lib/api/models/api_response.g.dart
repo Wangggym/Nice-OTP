@@ -12,7 +12,7 @@ ApiResponse<T> _$ApiResponseFromJson<T>(
 ) =>
     ApiResponse<T>(
       success: json['success'] as bool,
-      message: json['message'] as String,
+      error: json['error'] as String?,
       data: _$nullableGenericFromJson(json['data'], fromJsonT),
     );
 
@@ -22,7 +22,7 @@ Map<String, dynamic> _$ApiResponseToJson<T>(
 ) =>
     <String, dynamic>{
       'success': instance.success,
-      'message': instance.message,
+      'error': instance.error,
       'data': _$nullableGenericToJson(instance.data, toJsonT),
     };
 
@@ -37,3 +37,13 @@ Object? _$nullableGenericToJson<T>(
   Object? Function(T value) toJson,
 ) =>
     input == null ? null : toJson(input);
+
+ToggleSyncResponse _$ToggleSyncResponseFromJson(Map<String, dynamic> json) =>
+    ToggleSyncResponse(
+      syncEnabled: json['syncEnabled'] as bool,
+    );
+
+Map<String, dynamic> _$ToggleSyncResponseToJson(ToggleSyncResponse instance) =>
+    <String, dynamic>{
+      'syncEnabled': instance.syncEnabled,
+    };

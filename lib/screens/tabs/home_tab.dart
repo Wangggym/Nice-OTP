@@ -7,6 +7,9 @@ import 'package:two_factor_authentication/manager/cloud_sync_manager.dart';
 import 'package:two_factor_authentication/screens/edit_account_screen.dart';
 import 'package:two_factor_authentication/services/otp_service.dart';
 import 'package:two_factor_authentication/store/otp_token_store.dart';
+import 'package:two_factor_authentication/store/user_store.dart';
+import 'package:two_factor_authentication/widgets/info_dialog.dart';
+import 'package:two_factor_authentication/widgets/sync_status_card.dart';
 import '../../widgets/otp_card.dart';
 import '../../widgets/empty_state_widget.dart';
 
@@ -22,6 +25,7 @@ class HomeTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final CloudSyncManager cloudSync = CloudSyncManager();
     final OTPTokenStore otpTokenStore = OTPTokenStore();
+    final UserStore userStore = UserStore();
 
     void editAccount(OTPToken account) async {
       final result = await Navigator.push(
@@ -54,22 +58,37 @@ class HomeTab extends StatelessWidget {
                 },
                 canAddMoreTokens: otpTokenStore.canAddMoreTokens,
               )
-            : RemainingSecondsContainer(
-                child: ListView.builder(
-                  itemCount: sortedAccounts.length,
-                  itemBuilder: (context, index) {
-                    return OTPCard(
-                      account: sortedAccounts[index],
-                      onEdit: editAccount,
-                      onPin: (account) {
-                        cloudSync.pinToken(account.id);
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (userStore.isSyncEnabled == false)
+                    SyncStatusCard(
+                      onSync: () async {
+                        await InfoDialog.show(context: context);
                       },
-                      onDelete: (account) {
-                        cloudSync.deleteToken(account.id);
-                      },
-                    );
-                  },
-                ),
+                    ),
+                  Expanded(
+                    child: RemainingSecondsContainer(
+                      child: ListView.builder(
+                        itemCount: sortedAccounts.length,
+                        itemBuilder: (context, index) {
+                          return OTPCard(
+                            account: sortedAccounts[index],
+                            onEdit: editAccount,
+                            onPin: (account) {
+                              cloudSync.pinToken(account.id);
+                            },
+                            onDelete: (account) {
+                              cloudSync.deleteToken(account.id);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                ],
               );
       },
     );

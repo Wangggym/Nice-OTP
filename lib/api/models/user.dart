@@ -9,8 +9,8 @@ class User {
   final String email;
   @JsonKey(name: 'nickname', defaultValue: '')
   final String nickname;
-  @JsonKey(name: 'sync_enabled')
-  final bool syncEnabled;
+  @JsonKey(name: 'sync_enabled', defaultValue: false)
+  bool syncEnabled;
 
   @JsonKey(name: 'last_sync_at')
   final DateTime? lastSyncAt;

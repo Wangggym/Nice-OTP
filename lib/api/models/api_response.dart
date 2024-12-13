@@ -5,12 +5,12 @@ part 'api_response.g.dart';
 @JsonSerializable(genericArgumentFactories: true)
 class ApiResponse<T> {
   final bool success;
-  final String message;
+  final String? error;
   final T? data;
 
   ApiResponse({
     required this.success,
-    required this.message,
+    this.error,
     this.data,
   });
 
@@ -20,6 +20,19 @@ class ApiResponse<T> {
   ) =>
       _$ApiResponseFromJson(json, fromJsonT);
 
-  Map<String, dynamic> toJson(Object? Function(T value) toJsonT) =>
-      _$ApiResponseToJson(this, toJsonT);
+  Map<String, dynamic> toJson(Object? Function(T value) toJsonT) => _$ApiResponseToJson(this, toJsonT);
+}
+
+@JsonSerializable()
+class ToggleSyncResponse {
+  @JsonKey(name: 'sync_enabled', defaultValue: false)
+  final bool syncEnabled;
+
+  ToggleSyncResponse({
+    required this.syncEnabled,
+  });
+
+  factory ToggleSyncResponse.fromJson(Map<String, dynamic> json) => _$ToggleSyncResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ToggleSyncResponseToJson(this);
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../api/models/user.dart';
+import 'package:intl/intl.dart';
 
 class UserStore {
   static final UserStore _instance = UserStore._internal();
@@ -32,6 +33,13 @@ class UserStore {
     }
   }
 
+  // 设置同步状态
+  void setSync(bool syncEnabled) {
+    if (_currentUserNotifier.value != null) {
+      _currentUserNotifier.value = _currentUserNotifier.value!.copyWith(syncEnabled: syncEnabled);
+    }
+  }
+
   // 检查是否已登录
   bool get isLoggedIn => _currentUserNotifier.value != null;
 
@@ -46,4 +54,10 @@ class UserStore {
 
   // 获取最后同步时间
   DateTime? get lastSyncTime => _currentUserNotifier.value?.lastSyncAt;
+
+  // 获取格式化的最后同步时间，格式：2023-03-15 10:00
+  String? get lastSyncTimeString {
+    if (lastSyncTime == null) return null;
+    return DateFormat('yyyy-MM-dd HH:mm').format(lastSyncTime!);
+  }
 }

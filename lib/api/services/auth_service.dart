@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
+import 'package:two_factor_authentication/api/models/api_response.dart';
 import '../dio_client.dart';
 import '../models/user.dart';
 import '../models/login_response.dart';
@@ -45,6 +46,21 @@ class AuthService {
       if (kDebugMode) {
         print('Error parsing user data: $e');
       }
+      rethrow;
+    }
+  }
+
+  Future<ApiResponse<ToggleSyncResponse>> toggleSync() async {
+    try {
+      final response = await _dio.post('/auth/toggle-sync');
+      return ApiResponse.fromJson(
+        response.data,
+        (json) => ToggleSyncResponse.fromJson(
+          json as Map<String, dynamic>,
+        ),
+      );
+    } catch (e) {
+      print('Failed to toggle sync: $e');
       rethrow;
     }
   }

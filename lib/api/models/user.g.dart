@@ -10,7 +10,7 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
       id: json['id'] as String,
       email: json['email'] as String? ?? '',
       nickname: json['nickname'] as String? ?? '',
-      syncEnabled: json['sync_enabled'] as bool,
+      syncEnabled: json['sync_enabled'] as bool? ?? false,
       lastSyncAt: json['last_sync_at'] == null
           ? null
           : DateTime.parse(json['last_sync_at'] as String),
