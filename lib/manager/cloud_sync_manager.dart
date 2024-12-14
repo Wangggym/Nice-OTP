@@ -25,8 +25,10 @@ class CloudSyncManager {
   Future<void> toggleSync() async {
     try {
       final response = await _authService.toggleSync();
-      if (response.success) {
+      if (response.success && response.data != null) {
         _userStore.setSync(response.data!.syncEnabled);
+      } else {
+        throw Exception(response.error ?? 'Toggle sync failed');
       }
     } catch (e) {
       print('Failed to toggle sync: $e');

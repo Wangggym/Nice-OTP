@@ -21,74 +21,77 @@ class ProfileTab extends StatelessWidget {
     final cloudSync = CloudSyncManager();
     final userStore = UserStore();
 
-    var recordText = userStore.isSyncEnabled
-        ? '${l10n.translate('latest_sync')}${userStore.lastSyncTimeString ?? l10n.translate('no_sync_record')}'
-        : l10n.translate('not_synced');
-
-    return ListView(
-      children: [
-        ListTile(
-          leading: const Icon(Icons.cloud_sync),
-          title: Text(l10n.translate('cloud_sync')),
-          subtitle: Text(
-            recordText,
-            style: const TextStyle(
-              fontSize: 12,
-            ),
-          ),
-          trailing: Transform.scale(
-            scale: 0.8,
-            child: Switch(
-              value: userStore.isSyncEnabled,
-              onChanged: (bool newValue) async {
-                try {
-                  await cloudSync.toggleSync();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.translate('operation_success')),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(l10n.translate('operation_failed')),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-            ),
-          ),
-          visualDensity: VisualDensity.compact,
-          onTap: () {},
-        ),
-        ListTile(
-          leading: const Icon(Icons.language),
-          title: Text(l10n.translate('language')),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => LanguageScreen(
-                  onLanguageSelected: onLocaleChanged,
-                  currentLocale: currentLocale,
+    return ValueListenableBuilder(
+        valueListenable: userStore.userNotifier,
+        builder: (context, user, child) {
+          var recordText = userStore.isSyncEnabled
+              ? '${l10n.translate('latest_sync')}${userStore.lastSyncTimeString ?? l10n.translate('no_sync_record')}'
+              : l10n.translate('not_synced');
+          return ListView(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.cloud_sync),
+                title: Text(l10n.translate('cloud_sync')),
+                subtitle: Text(
+                  recordText,
+                  style: const TextStyle(
+                    fontSize: 12,
+                  ),
                 ),
+                trailing: Transform.scale(
+                  scale: 0.8,
+                  child: Switch(
+                    value: userStore.isSyncEnabled,
+                    onChanged: (bool newValue) async {
+                      try {
+                        await cloudSync.toggleSync();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.translate('operation_success')),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(l10n.translate('operation_failed')),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                visualDensity: VisualDensity.compact,
+                onTap: () {},
               ),
-            );
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.info_outline),
-          title: Text(l10n.translate('about')),
-          onTap: () {
-            showDialog(
-              context: context,
-              builder: (context) => const CustomAboutDialog(),
-            );
-          },
-        ),
-      ],
-    );
+              ListTile(
+                leading: const Icon(Icons.language),
+                title: Text(l10n.translate('language')),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LanguageScreen(
+                        onLanguageSelected: onLocaleChanged,
+                        currentLocale: currentLocale,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: Text(l10n.translate('about')),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const CustomAboutDialog(),
+                  );
+                },
+              ),
+            ],
+          );
+        });
   }
 }

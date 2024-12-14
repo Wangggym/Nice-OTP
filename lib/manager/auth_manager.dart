@@ -45,14 +45,17 @@ class AuthManager {
       if (await isAuthenticated()) {
         try {
           // 尝试获取用户信息
-          final user = await _authService.getProfile();
-          _userStore.setUser(user);
-          return user;
-        } catch (e) {
-          print('获取用户信息失败: $e');
+          final response = await _authService.getProfile();
+          if (response.success && response.data != null) {
+            _userStore.setUser(response.data!);
+            return response.data;
+          }
           // 如果获取失败，清除token
           await clearToken();
           // 继续执行登录流程
+        } catch (e) {
+          print('获取用户信息失败: $e');
+          await clearToken();
         }
       }
 
@@ -66,21 +69,30 @@ class AuthManager {
 
         print('调用登录接口...');
         final loginResponse = await _authService.login(weChatCode);
-        print('登录成功，token: ${loginResponse.token}');
-
-        await setToken(loginResponse.token);
-
-        try {
-          print('获取用户信息...');
-          final user = await _authService.getProfile();
-          print('获取用户信息成功: ${user.nickname}');
-          _userStore.setUser(user);
-          return user;
-        } catch (e) {
-          print('获取用户信息失败，但保留token: $e');
-          // 即使获取用户信息失败，也不清除token
-          return null;
+        if (!loginResponse.success || loginResponse.data == null) {
+          throw Exception('Login failed: ${loginResponse.error}');
         }
+        print('登录成功，token: ${loginResponse.data!.token}');
+
+        await setToken(loginResponse.data!.token);
+      } else {
+        await _storage.setToken(
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uX2tleSI6IlFKanBSa1NxNXdBUjQ4aTl0Y3dJMkE9PSIsIm9wZW5pZCI6Im81bjRxN2Z3dUo0c0VrRDQwYnBtUWVfUEV0WjAiLCJ1c2VyX2lkIjoiOGQyNzhiZTMtOWVjOC00Y2M1LTljYTItMWJiYmI2YTNjNmFhIiwiaWF0IjoxNzM0MTQxNzQ5LCJleHAiOjE3MzQ3NDY1NDl9.G9Ysi03FhgroOyyyfhTCj7Wv_20kLghY9fupzx9wotk");
+      }
+
+      try {
+        print('获取用户信息...');
+        final userResponse = await _authService.getProfile();
+        if (userResponse.success && userResponse.data != null) {
+          print('获取用户信息成功: ${userResponse.data!.nickname}');
+          _userStore.setUser(userResponse.data!);
+          return userResponse.data;
+        }
+        print('获取用户信息失败: ${userResponse.error}');
+        return null;
+      } catch (e) {
+        print('获取用户信息失败，但保留token: $e');
+        return null;
       }
     } catch (e, stackTrace) {
       print('登录过程出错:');

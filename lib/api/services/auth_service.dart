@@ -8,34 +8,37 @@ import '../models/login_response.dart';
 class AuthService {
   final Dio _dio = DioClient().dio;
 
-  Future<LoginResponse> login(String code) async {
+  Future<ApiResponse<LoginResponse>> login(String code) async {
     try {
       final response = await _dio.post('/auth/login', data: {
         'code': code,
       });
-      return LoginResponse.fromJson(response.data);
+      return ApiResponse.fromJson(
+        response.data,
+        (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
+      );
     } on DioException {
       rethrow;
     }
   }
 
-  Future<User> getProfile() async {
+  Future<ApiResponse<User>> getProfile() async {
     try {
       final response = await _dio.get('/auth/profile');
       if (kDebugMode) {
         print('Profile API Response: ${response.data}');
       }
 
-      if (response.data['user'] == null) {
-        throw Exception('User data is null in response');
-      }
-
-      final userData = response.data['user'] as Map<String, dynamic>;
-      if (kDebugMode) {
-        print('User data to parse: $userData');
-      }
-
-      return User.fromJson(userData);
+      return ApiResponse.fromJson(
+        response.data,
+        (json) {
+          final userData = (json as Map<String, dynamic>)['user'];
+          if (userData == null) {
+            throw Exception('User data is null in response');
+          }
+          return User.fromJson(userData as Map<String, dynamic>);
+        },
+      );
     } on DioException catch (e) {
       if (kDebugMode) {
         print('DioException in getProfile: $e');
@@ -52,15 +55,15 @@ class AuthService {
 
   Future<ApiResponse<ToggleSyncResponse>> toggleSync() async {
     try {
-      final response = await _dio.post('/auth/toggle-sync');
+      final response = await _dio.post('/auth/toggle-sync', data: {});
       return ApiResponse.fromJson(
         response.data,
-        (json) => ToggleSyncResponse.fromJson(
-          json as Map<String, dynamic>,
-        ),
+        (json) => ToggleSyncResponse.fromJson(json as Map<String, dynamic>),
       );
     } catch (e) {
-      print('Failed to toggle sync: $e');
+      if (kDebugMode) {
+        print('Failed to toggle sync: $e');
+      }
       rethrow;
     }
   }

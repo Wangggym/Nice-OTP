@@ -55,7 +55,7 @@ class OTPTokenService {
 
   Future<TokenOperationResponse> pinToken(String id) async {
     try {
-      final response = await _dio.put('/otp/tokens/pin/$id');
+      final response = await _dio.put('/otp/tokens/pin/$id', data: {});
       return TokenOperationResponse.fromJson(response.data);
     } on DioException {
       rethrow;

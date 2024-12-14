@@ -44,10 +44,14 @@ class HomeTab extends StatelessWidget {
       }
     }
 
-    return ValueListenableBuilder(
-      valueListenable: otpTokenStore.tokens,
-      builder: (context, accounts, child) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        otpTokenStore.tokens,
+        userStore.userNotifier,
+      ]),
+      builder: (context, child) {
         final sortedAccounts = otpTokenStore.sortedTokens;
+        final isSyncEnabled = userStore.isSyncEnabled;
 
         return sortedAccounts.isEmpty
             ? EmptyStateWidget(
@@ -63,7 +67,7 @@ class HomeTab extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (userStore.isSyncEnabled == false)
+                  if (isSyncEnabled == false)
                     SyncStatusCard(
                       onSync: () async {
                         await InfoDialog.show(context: context);
