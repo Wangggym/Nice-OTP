@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:two_factor_authentication/models/otp_account.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 
 void main() {
   group('OTPAccount', () {
     test('creates instance with required parameters', () {
-      final account = OTPAccount(
+      final account = OTPToken(
         name: 'Test User',
         secret: 'TESTSECRET',
         issuer: 'Test Issuer',
@@ -22,7 +22,7 @@ void main() {
         'issuer': 'Test Issuer',
       };
 
-      final account = OTPAccount.fromJson(json);
+      final account = OTPToken.fromJson(json);
 
       expect(account.name, 'Test User');
       expect(account.secret, 'TESTSECRET');
@@ -30,7 +30,7 @@ void main() {
     });
 
     test('toJson converts instance to map correctly', () {
-      final account = OTPAccount(
+      final account = OTPToken(
         name: 'Test User',
         secret: 'TESTSECRET',
         issuer: 'Test Issuer',
@@ -44,10 +44,9 @@ void main() {
     });
 
     test('fromUri parses otpauth URI correctly', () {
-      final uri = Uri.parse(
-          'otpauth://totp/Test%20Issuer:Test%20User?secret=TESTSECRET&issuer=Test%20Issuer');
+      final uri = Uri.parse('otpauth://totp/Test%20Issuer:Test%20User?secret=TESTSECRET&issuer=Test%20Issuer');
 
-      final account = OTPAccount.fromUri(uri);
+      final account = OTPToken.fromUri(uri);
 
       expect(account.name, 'Test User');
       expect(account.secret, 'TESTSECRET');
@@ -55,10 +54,9 @@ void main() {
     });
 
     test('fromUri handles URI without issuer in parameters', () {
-      final uri = Uri.parse(
-          'otpauth://totp/Test%20Issuer:Test%20User?secret=TESTSECRET');
+      final uri = Uri.parse('otpauth://totp/Test%20Issuer:Test%20User?secret=TESTSECRET');
 
-      final account = OTPAccount.fromUri(uri);
+      final account = OTPToken.fromUri(uri);
 
       expect(account.name, 'Test User');
       expect(account.secret, 'TESTSECRET');
@@ -66,10 +64,9 @@ void main() {
     });
 
     test('fromUri handles URI without issuer in label', () {
-      final uri = Uri.parse(
-          'otpauth://totp/Test%20User?secret=TESTSECRET&issuer=Test%20Issuer');
+      final uri = Uri.parse('otpauth://totp/Test%20User?secret=TESTSECRET&issuer=Test%20Issuer');
 
-      final account = OTPAccount.fromUri(uri);
+      final account = OTPToken.fromUri(uri);
 
       expect(account.name, 'Test User');
       expect(account.secret, 'TESTSECRET');
@@ -80,23 +77,22 @@ void main() {
       final invalidUri = Uri.parse('invalid://uri');
 
       expect(
-        () => OTPAccount.fromUri(invalidUri),
+        () => OTPToken.fromUri(invalidUri),
         throwsA(isA<FormatException>()),
       );
     });
 
     test('fromUri throws FormatException for missing secret', () {
-      final uriWithoutSecret =
-          Uri.parse('otpauth://totp/Test%20Issuer:Test%20User');
+      final uriWithoutSecret = Uri.parse('otpauth://totp/Test%20Issuer:Test%20User');
 
       expect(
-        () => OTPAccount.fromUri(uriWithoutSecret),
+        () => OTPToken.fromUri(uriWithoutSecret),
         throwsA(isA<FormatException>()),
       );
     });
 
     test('toString returns formatted string', () {
-      final account = OTPAccount(
+      final account = OTPToken(
         name: 'Test User',
         secret: 'TESTSECRET',
         issuer: 'Test Issuer',
@@ -106,19 +102,19 @@ void main() {
     });
 
     test('== operator compares correctly', () {
-      final account1 = OTPAccount(
+      final account1 = OTPToken(
         name: 'Test User',
         secret: 'TESTSECRET',
         issuer: 'Test Issuer',
       );
 
-      final account2 = OTPAccount(
+      final account2 = OTPToken(
         name: 'Test User',
         secret: 'TESTSECRET',
         issuer: 'Test Issuer',
       );
 
-      final account3 = OTPAccount(
+      final account3 = OTPToken(
         name: 'Different User',
         secret: 'TESTSECRET',
         issuer: 'Test Issuer',
@@ -129,13 +125,13 @@ void main() {
     });
 
     test('hashCode is consistent', () {
-      final account1 = OTPAccount(
+      final account1 = OTPToken(
         name: 'Test User',
         secret: 'TESTSECRET',
         issuer: 'Test Issuer',
       );
 
-      final account2 = OTPAccount(
+      final account2 = OTPToken(
         name: 'Test User',
         secret: 'TESTSECRET',
         issuer: 'Test Issuer',

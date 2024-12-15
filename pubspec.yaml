@@ -31,9 +31,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  dio: ^5.4.1
+  json_annotation: ^4.8.1
+
   mpflutter_core: ^2.7.5
   mpflutter_build_tools: ^2.7.5
-  mpflutter_wechat_api: ^2.2.3
+  mpflutter_wechat_api: ^2.2.4
   dartx: ^1.2.0
   # mpflutter_wechat_mapview: ^0.0.3
   # es_compression: <= 2.0.12
@@ -53,6 +56,8 @@ dependencies:
   flutter_svg: ^2.0.9  # 添加这一行
   flutter_localizations:
     sdk: flutter
+  intl: ^0.19.0  # 更新到与 flutter_localizations 兼容的版本
+  flutter_dotenv: ^5.1.0
 
 
 dev_dependencies:
@@ -60,6 +65,7 @@ dev_dependencies:
     sdk: flutter
   watcher: ^1.1.0  # 替换 flutter_test_watcher
   mockito: ^5.4.0
+  json_serializable: ^6.7.1
   build_runner: ^2.4.0
   rename_app: ^1.6.1
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -124,6 +130,8 @@ flutter:
   assets:
     - assets/translations/
     - assets/images/
+    - .env.dev
+    - .env.prod
 
 # Move flutter_launcher_icons configuration to root level
 flutter_launcher_icons:
@@ -143,3 +151,11 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/icon/icon.png"
+
+targets:
+  $default:
+    builders:
+      build_web_compilers|entrypoint:
+        generate_for:
+          - lib/main_dev.dart
+          - lib/main.dart

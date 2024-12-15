@@ -50,3 +50,7 @@ node_modules/
 
 # Coverage
 coverage/
+
+# Environment variables
+.env.dev
+.env.prod

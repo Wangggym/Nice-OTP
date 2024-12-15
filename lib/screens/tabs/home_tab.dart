@@ -1,50 +1,101 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
+import 'package:two_factor_authentication/api/models/token_update_request.dart';
+import 'package:two_factor_authentication/manager/cloud_sync_manager.dart';
+import 'package:two_factor_authentication/screens/edit_account_screen.dart';
 import 'package:two_factor_authentication/services/otp_service.dart';
-import '../../models/otp_account.dart';
+import 'package:two_factor_authentication/store/otp_token_store.dart';
+import 'package:two_factor_authentication/store/user_store.dart';
+import 'package:two_factor_authentication/widgets/info_dialog.dart';
+import 'package:two_factor_authentication/widgets/sync_status_card.dart';
 import '../../widgets/otp_card.dart';
 import '../../widgets/empty_state_widget.dart';
 
 class HomeTab extends StatelessWidget {
-  final List<OTPAccount> accounts;
-  final List<String> pinnedAccountNames;
-  final Function(OTPAccount) onDelete;
-  final Function(OTPAccount) onEdit;
-  final Function(OTPAccount) onPin;
-  final Function(OTPAccount) onAccountAdded;
   final VoidCallback onAddPressed;
 
   const HomeTab({
     super.key,
-    required this.accounts,
-    required this.pinnedAccountNames,
-    required this.onDelete,
-    required this.onEdit,
-    required this.onPin,
     required this.onAddPressed,
-    required this.onAccountAdded,
   });
 
   @override
   Widget build(BuildContext context) {
-    return accounts.isEmpty
-        ? EmptyStateWidget(
-            onAddPressed: onAddPressed, onAccountAdded: onAccountAdded)
-        : RemainingSecondsContainer(
-            child: ListView.builder(
-              itemCount: accounts.length,
-              itemBuilder: (context, index) {
-                return OTPCard(
-                  account: accounts[index],
-                  onDelete: onDelete,
-                  onEdit: onEdit,
-                  onPin: onPin,
-                  isPinned: pinnedAccountNames.contains(accounts[index].name),
-                );
-              },
-            ),
-          );
+    final CloudSyncManager cloudSync = CloudSyncManager();
+    final OTPTokenStore otpTokenStore = OTPTokenStore();
+    final UserStore userStore = UserStore();
+
+    void editAccount(OTPToken account) async {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EditAccountScreen(account: account),
+        ),
+      );
+
+      if (result != null && result is OTPToken) {
+        cloudSync.updateToken(TokenUpdateRequest(
+          id: result.id,
+          name: result.name,
+          issuer: result.issuer ?? '',
+        ));
+      }
+    }
+
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        otpTokenStore.tokens,
+        userStore.userNotifier,
+      ]),
+      builder: (context, child) {
+        final sortedAccounts = otpTokenStore.sortedTokens;
+        final isSyncEnabled = userStore.isSyncEnabled;
+
+        return sortedAccounts.isEmpty
+            ? EmptyStateWidget(
+                onAddPressed: onAddPressed,
+                onAccountAdded: () {
+                  var account = OTPService.addRandomAccount();
+                  cloudSync.createToken(account);
+                },
+                canAddMoreTokens: otpTokenStore.canAddMoreTokens,
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isSyncEnabled == false)
+                    SyncStatusCard(
+                      onSync: () async {
+                        await InfoDialog.show(context: context);
+                      },
+                    ),
+                  Expanded(
+                    child: RemainingSecondsContainer(
+                      child: ListView.builder(
+                        itemCount: sortedAccounts.length,
+                        itemBuilder: (context, index) {
+                          return OTPCard(
+                            account: sortedAccounts[index],
+                            onEdit: editAccount,
+                            onPin: (account) {
+                              cloudSync.pinToken(account.id);
+                            },
+                            onDelete: (account) {
+                              cloudSync.deleteToken(account.id);
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  )
+                ],
+              );
+      },
+    );
   }
 }
 
@@ -54,14 +105,12 @@ class RemainingSecondsContainer extends StatefulWidget {
   const RemainingSecondsContainer({super.key, required this.child});
 
   @override
-  State<RemainingSecondsContainer> createState() =>
-      _RemainingSecondsContainerState();
+  State<RemainingSecondsContainer> createState() => _RemainingSecondsContainerState();
 }
 
 class _RemainingSecondsContainerState extends State<RemainingSecondsContainer> {
   late Timer _timer;
-  late int _remainingSeconds =
-      OTPService.getRemainingSeconds(now: OTPService.getNow());
+  late int _remainingSeconds = OTPService.getRemainingSeconds(now: OTPService.getNow());
   late Function update = (int now) {};
 
   @override
@@ -90,10 +139,7 @@ class _RemainingSecondsContainerState extends State<RemainingSecondsContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return RemainingSecondsProvider(
-        remainingSeconds: _remainingSeconds,
-        update: update,
-        child: widget.child);
+    return RemainingSecondsProvider(remainingSeconds: _remainingSeconds, update: update, child: widget.child);
   }
 }
 
@@ -108,8 +154,7 @@ class RemainingSecondsProvider extends InheritedWidget {
   });
 
   static RemainingSecondsProvider of(BuildContext context) {
-    return context
-            .dependOnInheritedWidgetOfExactType<RemainingSecondsProvider>() ??
+    return context.dependOnInheritedWidgetOfExactType<RemainingSecondsProvider>() ??
         RemainingSecondsProvider(
           remainingSeconds: 30,
           update: (int now) {},
@@ -123,8 +168,7 @@ class RemainingSecondsProvider extends InheritedWidget {
   }
 }
 
-class RemainingSecondsConsumer<T extends RemainingSecondsProvider>
-    extends StatelessWidget {
+class RemainingSecondsConsumer<T extends RemainingSecondsProvider> extends StatelessWidget {
   const RemainingSecondsConsumer({
     super.key,
     required this.builder,

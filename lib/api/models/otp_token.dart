@@ -1,33 +1,46 @@
-import "package:dartx/dartx.dart";
+import 'package:dartx/dartx.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-class OTPAccount {
+part 'otp_token.g.dart';
+
+@JsonSerializable()
+class OTPToken {
+  @JsonKey(name: 'id', defaultValue: "")
+  String id;
   final String name;
   final String secret;
+  @JsonKey(name: 'issuer', defaultValue: "")
   final String? issuer;
+  @JsonKey(name: 'pinned_time', defaultValue: null)
+  DateTime? pinnedTime;
 
-  OTPAccount({
+  @JsonKey(name: 'created_at')
+  final DateTime? createdAt;
+  @JsonKey(name: 'updated_at')
+  DateTime? updatedAt;
+  @JsonKey(name: 'deleted_at')
+  final DateTime? deletedAt;
+
+  OTPToken({
+    this.id = "",
     required this.name,
     required this.secret,
     this.issuer,
-  });
-
-  factory OTPAccount.fromJson(Map<String, dynamic> json) {
-    return OTPAccount(
-      name: json['name'] as String,
-      secret: json['secret'] as String,
-      issuer: json['issuer'] as String?,
-    );
+    this.pinnedTime,
+    this.createdAt,
+    this.updatedAt,
+    this.deletedAt,
+  }) {
+    if (id.isEmpty) {
+      id = DateTime.now().millisecondsSinceEpoch.toString();
+    }
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'secret': secret,
-      if (issuer != null) 'issuer': issuer,
-    };
-  }
+  factory OTPToken.fromJson(Map<String, dynamic> json) => _$OTPTokenFromJson(json);
 
-  factory OTPAccount.fromUri(Uri uri) {
+  Map<String, dynamic> toJson() => _$OTPTokenToJson(this);
+
+  factory OTPToken.fromUri(Uri uri) {
     if (uri.scheme != 'otpauth' || uri.host != 'totp') {
       throw const FormatException('Invalid OTP URI format');
     }
@@ -40,8 +53,7 @@ class OTPAccount {
     String name;
     String? issuer;
 
-    final path =
-        Uri.decodeComponent(uri.path.substring(1)); // Remove leading '/'
+    final path = Uri.decodeComponent(uri.path.substring(1)); // Remove leading '/'
 
     if (path.contains(':')) {
       final parts = path.split(':');
@@ -57,7 +69,8 @@ class OTPAccount {
       issuer = uri.queryParameters['issuer']!;
     }
 
-    return OTPAccount(
+    return OTPToken(
+      id: '',
       name: name,
       secret: secret,
       issuer: issuer,
@@ -70,12 +83,11 @@ class OTPAccount {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is OTPAccount &&
-        other.name == name &&
-        other.secret == secret &&
-        other.issuer == issuer;
+    return other is OTPToken && other.name == name && other.secret == secret && other.issuer == issuer;
   }
 
   @override
   int get hashCode => Object.hash(name, secret, issuer);
+
+  bool get isPinned => pinnedTime != null;
 }

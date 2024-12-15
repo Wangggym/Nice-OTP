@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:two_factor_authentication/services/clipboard_service.dart';
-import '../models/otp_account.dart';
+import '../api/models/otp_token.dart';
 import '../services/localization_service.dart';
 
 class EditAccountScreen extends StatefulWidget {
-  final OTPAccount account;
+  final OTPToken account;
 
   const EditAccountScreen({super.key, required this.account});
 
@@ -66,10 +66,11 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
                 label: Text(l10n.translate('save')),
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    final updatedAccount = OTPAccount(
+                    final updatedAccount = OTPToken(
                       name: _nameController.text,
                       secret: widget.account.secret,
                       issuer: _issuerController.text,
+                      id: widget.account.id,
                     );
                     Navigator.pop(context, updatedAccount);
                   }
