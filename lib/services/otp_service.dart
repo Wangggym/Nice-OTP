@@ -51,14 +51,10 @@ class OTPService {
   }
 
   static OTPToken addRandomAccount() {
-    final random = Random();
-    final randomIssuers = ['Google', 'GitHub', 'Facebook', 'Twitter', 'Amazon', 'Microsoft', 'Apple'];
-    final randomIssuer = randomIssuers[random.nextInt(randomIssuers.length)];
-
     return OTPToken(
       name: "Example ${DateTime.now().millisecondsSinceEpoch}",
       secret: OTPService.generateRandomSecret(),
-      issuer: randomIssuer,
+      issuer: "Test",
     );
   }
 }

@@ -57,6 +57,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.19.0  # 更新到与 flutter_localizations 兼容的版本
+  flutter_dotenv: ^5.1.0
 
 
 dev_dependencies:
@@ -129,6 +130,8 @@ flutter:
   assets:
     - assets/translations/
     - assets/images/
+    - .env.dev
+    - .env.prod
 
 # Move flutter_launcher_icons configuration to root level
 flutter_launcher_icons:
@@ -148,3 +151,11 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/icon/icon.png"
+
+targets:
+  $default:
+    builders:
+      build_web_compilers|entrypoint:
+        generate_for:
+          - lib/main_dev.dart
+          - lib/main.dart

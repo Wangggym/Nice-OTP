@@ -63,7 +63,7 @@ class OTPTokenStore {
         secret: token.secret,
         issuer: updatedToken.issuer,
         createdAt: token.createdAt,
-        updatedAt: token.updatedAt,
+        updatedAt: DateTime.now(),
         deletedAt: token.deletedAt,
       );
       tokens.value = updatedTokens;
@@ -85,8 +85,10 @@ class OTPTokenStore {
     final token = updatedTokens.firstWhere((token) => token.id == id);
     if (token.pinnedTime != null) {
       token.pinnedTime = null;
+      token.updatedAt = DateTime.now();
     } else {
       token.pinnedTime = DateTime.now();
+      token.updatedAt = DateTime.now();
     }
     tokens.value = updatedTokens;
     return updatedTokens;

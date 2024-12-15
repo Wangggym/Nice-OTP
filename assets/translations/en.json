@@ -71,5 +71,8 @@
   "sync_success": "Sync successful",
   "sync_failed": "Sync failed",
   "operation_success": "Operation successful",
-  "operation_failed": "Operation failed"
+  "operation_failed": "Operation failed",
+  "not_enabled": "Not enabled",
+  "account_recovery": "Account Recovery",
+  "recovery_coming_soon": "Recovery feature coming soon"
 } 

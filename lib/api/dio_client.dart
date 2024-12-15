@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import '../manager/auth_manager.dart';
+import '../config/env_config.dart';
 
 class DioClient {
   static final DioClient _instance = DioClient._internal();
@@ -9,7 +10,7 @@ class DioClient {
 
   DioClient._internal() {
     dio = Dio(BaseOptions(
-      baseUrl: 'http://localhost:4000',
+      baseUrl: EnvConfig().apiBaseUrl,
       connectTimeout: const Duration(seconds: 5),
       receiveTimeout: const Duration(seconds: 3),
       headers: {

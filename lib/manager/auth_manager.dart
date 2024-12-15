@@ -1,4 +1,5 @@
 import 'package:mpflutter_core/mpflutter_core.dart';
+import 'package:two_factor_authentication/config/env_config.dart';
 import 'package:two_factor_authentication/services/wechat_login_service.dart';
 
 import '../api/services/auth_service.dart';
@@ -76,8 +77,7 @@ class AuthManager {
 
         await setToken(loginResponse.data!.token);
       } else {
-        await _storage.setToken(
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uX2tleSI6IlFKanBSa1NxNXdBUjQ4aTl0Y3dJMkE9PSIsIm9wZW5pZCI6Im81bjRxN2Z3dUo0c0VrRDQwYnBtUWVfUEV0WjAiLCJ1c2VyX2lkIjoiOGQyNzhiZTMtOWVjOC00Y2M1LTljYTItMWJiYmI2YTNjNmFhIiwiaWF0IjoxNzM0MTQxNzQ5LCJleHAiOjE3MzQ3NDY1NDl9.G9Ysi03FhgroOyyyfhTCj7Wv_20kLghY9fupzx9wotk");
+        await _storage.setToken(EnvConfig().debugToken);
       }
 
       try {

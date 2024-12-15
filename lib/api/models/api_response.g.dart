@@ -38,10 +38,12 @@ Object? _$nullableGenericToJson<T>(
 ) =>
     input == null ? null : toJson(input);
 
-ToggleSyncResponse _$ToggleSyncResponseFromJson(Map<String, dynamic> json) => ToggleSyncResponse(
+ToggleSyncResponse _$ToggleSyncResponseFromJson(Map<String, dynamic> json) =>
+    ToggleSyncResponse(
       syncEnabled: json['sync_enabled'] as bool? ?? false,
     );
 
-Map<String, dynamic> _$ToggleSyncResponseToJson(ToggleSyncResponse instance) => <String, dynamic>{
+Map<String, dynamic> _$ToggleSyncResponseToJson(ToggleSyncResponse instance) =>
+    <String, dynamic>{
       'sync_enabled': instance.syncEnabled,
     };

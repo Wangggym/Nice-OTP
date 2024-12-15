@@ -47,7 +47,7 @@ class CloudSyncManager {
   }
 
   Future<void> sync() async {
-    final lastSyncAt = _userStore.lastSyncTime;
+    final lastSyncAt = await _storageManager.getLastSyncAt();
     final storageTokens = await _storageManager.getAccounts();
 
     if (_userStore.isSyncEnabled) {
@@ -74,16 +74,15 @@ class CloudSyncManager {
     // Save locally first
     final allTokens = _otpTokenStore.addToken(newtoken);
     _storageManager.setAccounts(allTokens);
+    _storageManager.setLastSyncAt(DateTime.now());
 
     if (_userStore.isSyncEnabled) {
       try {
         final response = await _otpTokenManager.createTokens([newtoken]);
         if (response.success) {
           var newTokens = [...copyTokens, ...response.tokens];
-          _otpTokenStore.setTokens(newTokens);
-          _userStore.setLastSyncAt(response.syncTime);
-          await _storageManager.setLastSyncAt(response.syncTime);
-          await _storageManager.setAccounts(newTokens);
+          await syncAccounts(newTokens);
+          await syncLastSyncAt(response.syncTime);
           return;
         }
         print('Failed to sync local data: ${response.error}');
@@ -97,6 +96,7 @@ class CloudSyncManager {
   Future<void> updateToken(TokenUpdateRequest token) async {
     var updatedTokens = _otpTokenStore.updateToken(token);
     _storageManager.setAccounts(updatedTokens);
+    _storageManager.setLastSyncAt(DateTime.now());
 
     if (_userStore.isSyncEnabled) {
       try {
@@ -116,6 +116,7 @@ class CloudSyncManager {
   Future<void> deleteToken(String id) async {
     var updatedTokens = _otpTokenStore.removeToken(id);
     _storageManager.setAccounts(updatedTokens);
+    _storageManager.setLastSyncAt(DateTime.now());
 
     if (_userStore.isSyncEnabled) {
       try {
@@ -134,6 +135,7 @@ class CloudSyncManager {
   Future<void> pinToken(String id) async {
     var updatedTokens = _otpTokenStore.pinToken(id);
     _storageManager.setAccounts(updatedTokens);
+    _storageManager.setLastSyncAt(DateTime.now());
 
     if (_userStore.isSyncEnabled) {
       try {

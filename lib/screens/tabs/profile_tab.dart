@@ -26,7 +26,7 @@ class ProfileTab extends StatelessWidget {
         builder: (context, user, child) {
           var recordText = userStore.isSyncEnabled
               ? '${l10n.translate('latest_sync')}${userStore.lastSyncTimeString ?? l10n.translate('no_sync_record')}'
-              : l10n.translate('not_synced');
+              : l10n.translate('not_enabled');
           return ListView(
             children: [
               ListTile(
@@ -45,6 +45,9 @@ class ProfileTab extends StatelessWidget {
                     onChanged: (bool newValue) async {
                       try {
                         await cloudSync.toggleSync();
+                        if (userStore.isSyncEnabled) {
+                          cloudSync.sync();
+                        }
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(l10n.translate('operation_success')),
@@ -63,6 +66,14 @@ class ProfileTab extends StatelessWidget {
                   ),
                 ),
                 visualDensity: VisualDensity.compact,
+                onTap: () {},
+              ),
+              ListTile(
+                leading: const Icon(Icons.restore),
+                title: Text(l10n.translate('account_recovery')),
+                subtitle: Text(
+                  l10n.translate('coming_soon'),
+                ),
                 onTap: () {},
               ),
               ListTile(

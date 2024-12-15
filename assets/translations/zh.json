@@ -71,5 +71,8 @@
   "sync_success": "同步成功",
   "sync_failed": "同步失败",
   "operation_success": "操作成功",
-  "operation_failed": "操作失败"
+  "operation_failed": "操作失败",
+  "not_enabled": "未开启",
+  "account_recovery": "账号恢复",
+  "recovery_coming_soon": "恢复功能即将上线"
 } 

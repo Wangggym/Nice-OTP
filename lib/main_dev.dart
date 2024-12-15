@@ -6,7 +6,7 @@ import 'package:two_factor_authentication/app.dart';
 import 'package:two_factor_authentication/config/env_config.dart';
 
 void main() async {
-  await EnvConfig().initialize(Environment.prod);
+  await EnvConfig().initialize(Environment.dev);
   runMPApp(const MyApp());
 
   /**

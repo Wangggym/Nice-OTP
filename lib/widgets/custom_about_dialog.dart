@@ -1,7 +1,4 @@
-import 'package:dartx/dartx.dart';
 import 'package:flutter/material.dart';
-import 'package:mpflutter_core/mpflutter_core.dart';
-import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
 import '../services/localization_service.dart';
 
 class CustomAboutDialog extends StatelessWidget {
@@ -12,13 +9,7 @@ class CustomAboutDialog extends StatelessWidget {
     final l10n = LocalizationService.of(context);
     final textTheme = Theme.of(context).textTheme;
 
-    String version = "1.0.0";
-    if (kIsMPFlutterWechat) {
-      // cannot get the correct version in the app base info
-      version = AppBaseInfo().version.isNotNullOrEmpty
-          ? AppBaseInfo().version
-          : "1.0.0";
-    }
+    String version = "2.0.0";
 
     return Dialog(
       shape: RoundedRectangleBorder(

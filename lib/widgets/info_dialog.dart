@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/store/user_store.dart';
 import '../services/localization_service.dart';
 import '../manager/cloud_sync_manager.dart';
 
@@ -20,14 +21,18 @@ class InfoDialog extends StatefulWidget {
 
 class _InfoDialogState extends State<InfoDialog> {
   bool _isLoading = false;
-
+  final cloudSync = CloudSyncManager();
+  final userStore = UserStore();
   Future<void> _handleSync(BuildContext context) async {
     if (_isLoading) return;
 
     setState(() => _isLoading = true);
 
     try {
-      await CloudSyncManager().toggleSync();
+      await cloudSync.toggleSync();
+      if (userStore.isSyncEnabled) {
+        cloudSync.sync();
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -69,7 +74,7 @@ class _InfoDialogState extends State<InfoDialog> {
         children: [
           Text(l10n.translate('cloud_sync_description')),
           const SizedBox(height: 16),
-          Text(l10n.translate('coming_soon_message')),
+          // Text(l10n.translate('coming_soon_message')),
           if (_isLoading) ...[
             const SizedBox(height: 16),
             const Center(child: CircularProgressIndicator()),

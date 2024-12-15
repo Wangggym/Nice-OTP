@@ -17,7 +17,7 @@ class OTPToken {
   @JsonKey(name: 'created_at')
   final DateTime? createdAt;
   @JsonKey(name: 'updated_at')
-  final DateTime? updatedAt;
+  DateTime? updatedAt;
   @JsonKey(name: 'deleted_at')
   final DateTime? deletedAt;
 
