@@ -69,14 +69,14 @@ class StorageManager {
   // User 相关方法
   Future<DateTime?> getLastSyncAt() async {
     await init();
-    final timestamp = _prefs.getInt(_lastSyncAtKey);
+    final timestamp = _prefs.getString(_lastSyncAtKey);
     if (timestamp == null) return null;
-    return DateTime.fromMillisecondsSinceEpoch(timestamp);
+    return DateTime.parse(timestamp);
   }
 
   Future<void> setLastSyncAt(DateTime lastSyncAt) async {
     await init();
-    await _prefs.setInt(_lastSyncAtKey, lastSyncAt.millisecondsSinceEpoch);
+    await _prefs.setString(_lastSyncAtKey, lastSyncAt.toIso8601String());
   }
 
   Future<void> removeLastSyncAt() async {
