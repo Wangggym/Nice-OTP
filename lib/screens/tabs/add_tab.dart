@@ -4,13 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mpflutter_core/mpflutter_core.dart';
 import 'package:mpflutter_wechat_api/mpflutter_wechat_api.dart';
-import '../../models/otp_account.dart';
+import 'package:two_factor_authentication/services/otp_service.dart';
+import 'package:two_factor_authentication/store/otp_token_store.dart';
+import '../../api/models/otp_token.dart';
 import '../../services/localization_service.dart';
 import '../../widgets/qr_scanner.dart';
-import '../../services/storage_service.dart';
 
-class AddTab extends StatelessWidget {
-  final Function(OTPAccount) onAccountAdded;
+class AddTab extends StatefulWidget {
+  final Function(OTPToken) onAccountAdded;
   final Function() onAccountDeleteAll;
 
   const AddTab({
@@ -20,39 +21,17 @@ class AddTab extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: AddAccountForm(
-            onAccountAdded: onAccountAdded,
-            onAccountDeleteAll: onAccountDeleteAll),
-      ),
-    );
-  }
+  State<AddTab> createState() => _AddTabState();
 }
 
-class AddAccountForm extends StatefulWidget {
-  final Function(OTPAccount) onAccountAdded;
-  final Function() onAccountDeleteAll;
-
-  const AddAccountForm({
-    super.key,
-    required this.onAccountAdded,
-    required this.onAccountDeleteAll,
-  });
-
-  @override
-  State<AddAccountForm> createState() => _AddAccountFormState();
-}
-
-class _AddAccountFormState extends State<AddAccountForm> {
+class _AddTabState extends State<AddTab> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _secretController = TextEditingController();
   final _issuerController = TextEditingController();
   final _urlController = TextEditingController();
   bool _isUrlMode = true;
+  final OTPTokenStore _otpTokenStore = OTPTokenStore();
 
   @override
   void dispose() {
@@ -90,7 +69,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
         setState(() {
           _isUrlMode = true;
           _urlController.text = qrCode;
-          final account = OTPAccount.fromUri(Uri.parse(qrCode));
+          final account = OTPToken.fromUri(Uri.parse(qrCode));
           _nameController.text = account.name;
           _secretController.text = account.secret;
           _issuerController.text = account.issuer ?? '';
@@ -113,7 +92,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
     if (_formKey.currentState!.validate()) {
       if (_isUrlMode) {
         try {
-          final account = OTPAccount.fromUri(Uri.parse(_urlController.text));
+          final account = OTPToken.fromUri(Uri.parse(_urlController.text));
           widget.onAccountAdded(account);
           _clearInputs();
         } catch (e) {
@@ -125,7 +104,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
         }
       } else {
         widget.onAccountAdded(
-          OTPAccount(
+          OTPToken(
             name: _nameController.text,
             secret: _secretController.text,
             issuer: _issuerController.text,
@@ -148,7 +127,7 @@ class _AddAccountFormState extends State<AddAccountForm> {
   Future<bool> _checkAccountLimit() async {
     final l10n = LocalizationService.of(context);
 
-    if (!(await StorageService.canAddMoreAccounts())) {
+    if (_otpTokenStore.canAddMoreTokens == false) {
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -160,203 +139,206 @@ class _AddAccountFormState extends State<AddAccountForm> {
     return true;
   }
 
-  void _addRandomAccount() {
-    OTPAccount account = StorageService.addRandomAccount();
-
-    widget.onAccountAdded(account);
+  Future<void> _addRandomAccount() async {
+    if (_otpTokenStore.canAddMoreTokens == true) {
+      final account = OTPService.addRandomAccount();
+      widget.onAccountAdded(account);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = LocalizationService.of(context);
 
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SegmentedButton<bool>(
-            segments: [
-              ButtonSegment(
-                value: true,
-                label: Text(l10n.translate('by_key_url')),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SegmentedButton<bool>(
+                segments: [
+                  ButtonSegment(
+                    value: true,
+                    label: Text(l10n.translate('by_key_url')),
+                  ),
+                  ButtonSegment(
+                    value: false,
+                    label: Text(l10n.translate('by_secret_key')),
+                  ),
+                ],
+                selected: {_isUrlMode},
+                onSelectionChanged: (Set<bool> newSelection) {
+                  setState(() {
+                    _isUrlMode = newSelection.first;
+                  });
+                },
               ),
-              ButtonSegment(
-                value: false,
-                label: Text(l10n.translate('by_secret_key')),
-              ),
-            ],
-            selected: {_isUrlMode},
-            onSelectionChanged: (Set<bool> newSelection) {
-              setState(() {
-                _isUrlMode = newSelection.first;
-              });
-            },
-          ),
-          const SizedBox(height: 16),
-          if (_isUrlMode)
-            TextFormField(
-              controller: _urlController,
-              decoration: InputDecoration(
-                labelText: l10n.translate('url'),
-                hintText: l10n.translate('enter_url'),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return l10n.translate('please_enter_url');
-                }
-                if (!value.startsWith('otpauth://')) {
-                  return l10n.translate('invalid_url');
-                }
-                return null;
-              },
-              onChanged: (url) {
-                if (url.startsWith('otpauth://')) {
-                  try {
-                    final account = OTPAccount.fromUri(Uri.parse(url));
-                    setState(() {
-                      _nameController.text = account.name;
-                      _secretController.text = account.secret;
-                      _issuerController.text = account.issuer ?? '';
-                    });
-                  } catch (e) {
-                    // Invalid URL format, ignore
-                  }
-                }
-              },
-            )
-          else
-            Column(
-              children: [
+              const SizedBox(height: 16),
+              if (_isUrlMode)
                 TextFormField(
-                  controller: _nameController,
+                  controller: _urlController,
                   decoration: InputDecoration(
-                    labelText: l10n.translate('account_name'),
-                    hintText: l10n.translate('enter_account_name'),
+                    labelText: l10n.translate('url'),
+                    hintText: l10n.translate('enter_url'),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return l10n.translate('please_enter_account');
+                      return l10n.translate('please_enter_url');
+                    }
+                    if (!value.startsWith('otpauth://')) {
+                      return l10n.translate('invalid_url');
                     }
                     return null;
                   },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _secretController,
-                  decoration: InputDecoration(
-                    labelText: l10n.translate('secret_key'),
-                    hintText: l10n.translate('enter_secret_key'),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return l10n.translate('please_enter_secret');
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _issuerController,
-                  decoration: InputDecoration(
-                    labelText: l10n.translate('issuer'),
-                    hintText: l10n.translate('enter_issuer'),
-                  ),
-                ),
-              ],
-            ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _scanQRCode,
-                  icon: const Icon(Icons.qr_code_scanner),
-                  label: Text(l10n.translate('scan_qr_code')),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.add),
-                  onPressed: () async {
-                    if (await _checkAccountLimit()) {
-                      _handleSubmit();
-                    }
-                  },
-                  label: Text(l10n.translate('add_account')),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (kDebugMode)
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      if (await _checkAccountLimit()) {
-                        _addRandomAccount();
+                  onChanged: (url) {
+                    if (url.startsWith('otpauth://')) {
+                      try {
+                        final account = OTPToken.fromUri(Uri.parse(url));
+                        setState(() {
+                          _nameController.text = account.name;
+                          _secretController.text = account.secret;
+                          _issuerController.text = account.issuer ?? '';
+                        });
+                      } catch (e) {
+                        // Invalid URL format, ignore
                       }
-                    },
-                    icon: const Icon(Icons.shuffle),
-                    label: Text(l10n.translate('add_random_account')),
-                  ),
+                    }
+                  },
+                )
+              else
+                Column(
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: l10n.translate('account_name'),
+                        hintText: l10n.translate('enter_account_name'),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return l10n.translate('please_enter_account');
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _secretController,
+                      decoration: InputDecoration(
+                        labelText: l10n.translate('secret_key'),
+                        hintText: l10n.translate('enter_secret_key'),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return l10n.translate('please_enter_secret');
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _issuerController,
+                      decoration: InputDecoration(
+                        labelText: l10n.translate('issuer'),
+                        hintText: l10n.translate('enter_issuer'),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          if (kDebugMode) const SizedBox(height: 16),
-          if (kDebugMode)
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      final l10n = LocalizationService.of(context);
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text(l10n.translate('clear_all_accounts')),
-                          content: Text(
-                              l10n.translate('clear_all_accounts_confirm')),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text(l10n.translate('cancel')),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                widget.onAccountDeleteAll();
-                                Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        l10n.translate('accounts_cleared')),
-                                  ),
-                                );
-                              },
-                              child: Text(l10n.translate('clear')),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.delete_forever),
-                    label: Text(l10n.translate('clear_all_accounts')),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _scanQRCode,
+                      icon: const Icon(Icons.qr_code_scanner),
+                      label: Text(l10n.translate('scan_qr_code')),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.add),
+                      onPressed: () async {
+                        if (await _checkAccountLimit()) {
+                          _handleSubmit();
+                        }
+                      },
+                      label: Text(l10n.translate('add_account')),
+                    ),
+                  ),
+                ],
+              ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          if (await _checkAccountLimit()) {
+                            await _addRandomAccount();
+                          }
+                        },
+                        icon: const Icon(Icons.shuffle),
+                        label: Text(l10n.translate('add_random_account')),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(l10n.translate('clear_all_accounts')),
+                              content: Text(l10n.translate('clear_all_accounts_confirm')),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(l10n.translate('cancel')),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    widget.onAccountDeleteAll();
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(l10n.translate('accounts_cleared')),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(l10n.translate('clear')),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.delete_forever),
+                        label: Text(l10n.translate('clear_all_accounts')),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-        ],
+            ],
+          ),
+        ),
       ),
     );
   }

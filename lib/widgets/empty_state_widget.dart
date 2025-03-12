@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:two_factor_authentication/models/otp_account.dart';
-import 'package:two_factor_authentication/services/storage_service.dart';
 import '../services/localization_service.dart';
 
 class EmptyStateWidget extends StatelessWidget {
   final VoidCallback onAddPressed;
-  final Function(OTPAccount) onAccountAdded;
+  final Function() onAccountAdded;
+  final bool canAddMoreTokens;
 
   const EmptyStateWidget({
     super.key,
     required this.onAddPressed,
     required this.onAccountAdded,
+    required this.canAddMoreTokens,
   });
 
   @override
@@ -40,9 +40,9 @@ class EmptyStateWidget extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () async {
-                onAccountAdded(
-                  StorageService.addRandomAccount(),
-                );
+                if (canAddMoreTokens) {
+                  onAccountAdded();
+                }
               },
               icon: const Icon(Icons.auto_awesome),
               label: Text(l10n.translate('add_random_account')),

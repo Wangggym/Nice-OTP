@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 import 'package:two_factor_authentication/widgets/account_options_menu.dart';
-import 'package:two_factor_authentication/models/otp_account.dart';
 import 'package:two_factor_authentication/services/localization_service.dart';
 
 class MockLocalizationService extends LocalizationService {
@@ -17,18 +17,17 @@ void main() {
   });
 
   group('AccountOptionsMenu Widget Tests', () {
-    late OTPAccount testAccount;
+    late OTPToken testAccount;
 
     setUp(() {
-      testAccount = OTPAccount(
+      testAccount = OTPToken(
         name: 'Test',
         secret: 'SECRET',
         issuer: 'Issuer',
       );
     });
 
-    testWidgets('shows menu and handles callbacks correctly',
-        (WidgetTester tester) async {
+    testWidgets('shows menu and handles callbacks correctly', (WidgetTester tester) async {
       bool copyPressed = false;
       bool editPressed = false;
       bool pinPressed = false;
@@ -89,8 +88,7 @@ void main() {
       expect(deletePressed, true);
     });
 
-    testWidgets('renders correct pin/unpin text based on isPinned state',
-        (WidgetTester tester) async {
+    testWidgets('renders correct pin/unpin text based on isPinned state', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Builder(

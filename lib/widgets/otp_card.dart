@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 import 'package:two_factor_authentication/screens/tabs/home_tab.dart';
 import 'package:two_factor_authentication/services/localization_service.dart';
-import '../models/otp_account.dart';
 import '../services/otp_service.dart';
 import '../services/clipboard_service.dart';
 import 'account_options_menu.dart';
@@ -11,11 +11,10 @@ import 'service_icon.dart';
 import 'otp_countdown_timer.dart';
 
 class OTPCard extends StatefulWidget {
-  final OTPAccount account;
-  final Function(OTPAccount) onDelete;
-  final Function(OTPAccount) onEdit;
-  final Function(OTPAccount) onPin;
-  final bool isPinned;
+  final OTPToken account;
+  final Function(OTPToken) onDelete;
+  final Function(OTPToken) onEdit;
+  final Function(OTPToken) onPin;
 
   const OTPCard({
     super.key,
@@ -23,7 +22,6 @@ class OTPCard extends StatefulWidget {
     required this.onDelete,
     required this.onEdit,
     required this.onPin,
-    required this.isPinned,
   });
 
   @override
@@ -83,8 +81,7 @@ class _OTPCardState extends State<OTPCard> {
   }
 
   void _showOptionsMenu(BuildContext context, LongPressStartDetails details) {
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
 
     final position = RelativeRect.fromRect(
       details.globalPosition & const Size(40, 40),
@@ -99,7 +96,7 @@ class _OTPCardState extends State<OTPCard> {
       onEdit: widget.onEdit,
       onPin: widget.onPin,
       onCopy: _copyOTPToClipboard,
-      isPinned: widget.isPinned,
+      isPinned: widget.account.isPinned,
     );
   }
 
@@ -132,11 +129,10 @@ class _OTPCardState extends State<OTPCard> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (widget.isPinned)
+                  if (widget.account.isPinned)
                     const Padding(
                       padding: EdgeInsets.only(right: 8),
-                      child:
-                          Icon(Icons.push_pin, size: 16, color: Colors.amber),
+                      child: Icon(Icons.push_pin, size: 16, color: Colors.amber),
                     ),
                   ServiceIcon(
                     issuer: widget.account.issuer ?? '',

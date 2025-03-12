@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:two_factor_authentication/api/models/otp_token.dart';
 import 'package:two_factor_authentication/widgets/otp_card.dart';
-import 'package:two_factor_authentication/models/otp_account.dart';
 import 'package:two_factor_authentication/services/localization_service.dart';
 import 'package:two_factor_authentication/widgets/account_options_menu.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +17,7 @@ class TestAccountOptionsMenu {
   static bool menuShown = false;
   static BuildContext? savedContext;
   static RelativeRect? savedPosition;
-  static OTPAccount? savedAccount;
+  static OTPToken? savedAccount;
 
   static void reset() {
     menuShown = false;
@@ -28,22 +28,21 @@ class TestAccountOptionsMenu {
 }
 
 void main() {
-  late OTPAccount testAccount;
+  late OTPToken testAccount;
 
   // Add this to track clipboard calls
   final List<MethodCall> clipboardCalls = <MethodCall>[];
 
   setUp(() {
     LocalizationService.instance = MockLocalizationService();
-    testAccount = OTPAccount(
+    testAccount = OTPToken(
       name: 'TestUser',
       secret: 'TESTSECRET',
       issuer: 'Google',
     );
 
     // Set up clipboard channel mock
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,
       (MethodCall methodCall) async {
         if (methodCall.method == 'Clipboard.setData') {
@@ -56,8 +55,7 @@ void main() {
 
   tearDown(() {
     // Clear clipboard mock
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       SystemChannels.platform,
       null,
     );
@@ -65,8 +63,7 @@ void main() {
   });
 
   group('OTPCard Tests', () {
-    testWidgets('renders basic elements correctly',
-        (WidgetTester tester) async {
+    testWidgets('renders basic elements correctly', (WidgetTester tester) async {
       await tester.runAsync(() async {
         await tester.pumpWidget(
           MaterialApp(
@@ -184,8 +181,7 @@ void main() {
       });
     });
 
-    testWidgets('copies OTP to clipboard when tapped',
-        (WidgetTester tester) async {
+    testWidgets('copies OTP to clipboard when tapped', (WidgetTester tester) async {
       await tester.runAsync(() async {
         await tester.pumpWidget(
           MaterialApp(
@@ -221,7 +217,6 @@ void main() {
       });
     });
 
-    testWidgets(
-        'shows options menu on long press', (WidgetTester tester) async {});
+    testWidgets('shows options menu on long press', (WidgetTester tester) async {});
   });
 }

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:two_factor_authentication/store/otp_token_store.dart';
 
-import '../models/otp_account.dart';
 import '../services/localization_service.dart';
-import '../services/storage_service.dart';
-import 'edit_account_screen.dart';
+import '../manager/cloud_sync_manager.dart';
 import 'tabs/home_tab.dart' deferred as home_tab;
 import 'tabs/add_tab.dart' deferred as add_tab;
 import 'tabs/profile_tab.dart' deferred as profile_tab;
@@ -21,12 +20,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<OTPAccount> _accounts = [];
-  List<String> _pinnedAccountNames = [];
   int _selectedIndex = 0;
   Future<void>? _homeTabFuture;
   Future<void>? _addTabFuture;
   Future<void>? _profileTabFuture;
+  final CloudSyncManager _cloudSync = CloudSyncManager();
+  final OTPTokenStore _otpTokenStore = OTPTokenStore();
 
   @override
   void initState() {
@@ -38,108 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadAccounts() async {
-    final accounts = await StorageService.loadAccounts();
-    final pinnedAccountNames = await StorageService.loadPinnedAccounts();
-    setState(() {
-      _accounts = accounts;
-      _pinnedAccountNames = pinnedAccountNames;
-      _sortAccounts();
-    });
-  }
-
-  void _sortAccounts() {
-    _accounts.sort((a, b) {
-      final isPinnedA = _pinnedAccountNames.contains(a.name);
-      final isPinnedB = _pinnedAccountNames.contains(b.name);
-      if (isPinnedA && !isPinnedB) return -1;
-      if (!isPinnedA && isPinnedB) return 1;
-      return a.name.compareTo(b.name);
-    });
-  }
-
-  Future<void> _saveAccounts() async {
-    await StorageService.saveAccounts(_accounts);
-    await StorageService.savePinnedAccounts(_pinnedAccountNames);
-  }
-
-  void _deleteAccount(OTPAccount account) {
-    setState(() {
-      _accounts.removeWhere((a) => a.name == account.name);
-      _pinnedAccountNames.remove(account.name);
-    });
-    _saveAccounts();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          LocalizationService.of(context).translate(
-            'has_been_deleted',
-            args: {'name': account.name},
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _editAccount(OTPAccount account) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EditAccountScreen(account: account),
-      ),
-    );
-
-    if (result != null && result is OTPAccount) {
-      setState(() {
-        final index = _accounts.indexWhere(
-            (a) => a.name == account.name && a.secret == account.secret);
-        if (index != -1) {
-          _accounts[index] = result;
-          _sortAccounts();
-        }
-      });
-      _saveAccounts();
-    }
-  }
-
-  void _pinAccount(OTPAccount account) {
-    setState(() {
-      if (_pinnedAccountNames.contains(account.name)) {
-        _pinnedAccountNames.remove(account.name);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              LocalizationService.of(context).translate(
-                'has_been_unpinned',
-                args: {'name': account.name},
-              ),
-            ),
-          ),
-        );
-      } else {
-        _pinnedAccountNames.add(account.name);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              LocalizationService.of(context).translate(
-                'has_been_pinned',
-                args: {'name': account.name},
-              ),
-            ),
-          ),
-        );
-      }
-      _sortAccounts();
-    });
-    _saveAccounts();
-  }
-
-  void _onAccountAdded(OTPAccount account) {
-    setState(() {
-      _accounts.add(account);
-      _sortAccounts();
-      _selectedIndex = 0;
-    });
-    _saveAccounts();
+    await _cloudSync.sync();
   }
 
   @override
@@ -170,12 +68,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               return home_tab.HomeTab(
-                accounts: _accounts,
-                pinnedAccountNames: _pinnedAccountNames,
-                onAccountAdded: _onAccountAdded,
-                onDelete: _deleteAccount,
-                onEdit: _editAccount,
-                onPin: _pinAccount,
                 onAddPressed: () => setState(() => _selectedIndex = 1),
               );
             },
@@ -187,14 +79,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 return const Center(child: CircularProgressIndicator());
               }
               return add_tab.AddTab(
-                onAccountAdded: _onAccountAdded,
-                onAccountDeleteAll: () {
+                onAccountAdded: (account) {
+                  _cloudSync.createToken(account);
                   setState(() {
-                    _accounts = [];
-                    _pinnedAccountNames = [];
                     _selectedIndex = 0;
                   });
-                  _saveAccounts();
+                },
+                onAccountDeleteAll: () {
+                  _cloudSync.deleteAllTokens();
+                  setState(() {
+                    _selectedIndex = 0;
+                  });
                 },
               );
             },
@@ -216,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: (index) async {
-          if (index == 1 && !(await StorageService.canAddMoreAccounts())) {
+          if (index == 1 && _otpTokenStore.canAddMoreTokens == false) {
             // ignore: use_build_context_synchronously
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
