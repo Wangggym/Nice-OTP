@@ -19,9 +19,17 @@ class AuthManager {
   String? _cachedToken;
 
   Future<String?> getToken() async {
-    if (_cachedToken != null) return _cachedToken;
+    if (_cachedToken != null) {
+      print('[AuthManager] 返回缓存的 token');
+      return _cachedToken;
+    }
 
     _cachedToken = await _storage.getToken();
+    if (_cachedToken != null) {
+      print('[AuthManager] 从 Storage 加载 token，长度: ${_cachedToken!.length}');
+    } else {
+      print('[AuthManager] ⚠️ Storage 中没有 token');
+    }
     return _cachedToken;
   }
 
@@ -70,12 +78,18 @@ class AuthManager {
 
         print('调用登录接口...');
         final loginResponse = await _authService.login(weChatCode);
-        if (!loginResponse.success || loginResponse.data == null) {
-          throw Exception('Login failed: ${loginResponse.error}');
-        }
-        print('登录成功，token: ${loginResponse.data!.token}');
-
-        await setToken(loginResponse.data!.token);
+        print('登录响应成功');
+        
+        final accessToken = loginResponse.accessToken;
+        print('登录成功，token 长度: ${accessToken.length}');
+        print('Token 前20字符: ${accessToken.substring(0, 20)}...');
+        
+        await setToken(accessToken);
+        print('✅ Token 已保存到 Storage');
+        
+        // 直接使用登录返回的用户信息
+        _userStore.setUser(loginResponse.user);
+        print('✅ 用户信息已保存，ID: ${loginResponse.user.id}');
       } else {
         await _storage.setToken(EnvConfig().debugToken);
       }

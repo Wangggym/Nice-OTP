@@ -8,23 +8,32 @@ import '../models/login_response.dart';
 class AuthService {
   final Dio _dio = DioClient().dio;
 
-  Future<ApiResponse<LoginResponse>> login(String code) async {
+  Future<LoginResponse> login(String code) async {
     try {
-      final response = await _dio.post('/auth/login', data: {
+      if (kDebugMode) {
+        print('[AuthService] 发送登录请求，code: $code');
+      }
+      final response = await _dio.post('/auth/wechat/login', data: {
         'code': code,
       });
-      return ApiResponse.fromJson(
-        response.data,
-        (json) => LoginResponse.fromJson(json as Map<String, dynamic>),
-      );
-    } on DioException {
+      if (kDebugMode) {
+        print('[AuthService] 登录响应状态: ${response.statusCode}');
+        print('[AuthService] 登录响应数据: ${response.data}');
+      }
+      // 后端直接返回 LoginResponse，不是包装在 ApiResponse 中
+      return LoginResponse.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      if (kDebugMode) {
+        print('[AuthService] 登录请求失败: ${e.message}');
+        print('[AuthService] 错误响应: ${e.response?.data}');
+      }
       rethrow;
     }
   }
 
   Future<ApiResponse<User>> getProfile() async {
     try {
-      final response = await _dio.get('/auth/profile');
+      final response = await _dio.get('/otp/auth/profile');
       if (kDebugMode) {
         print('Profile API Response: ${response.data}');
       }
@@ -55,7 +64,7 @@ class AuthService {
 
   Future<ApiResponse<ToggleSyncResponse>> toggleSync() async {
     try {
-      final response = await _dio.post('/auth/toggle-sync', data: {});
+      final response = await _dio.post('/otp/auth/toggle-sync', data: {});
       return ApiResponse.fromJson(
         response.data,
         (json) => ToggleSyncResponse.fromJson(json as Map<String, dynamic>),
